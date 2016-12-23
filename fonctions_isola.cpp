@@ -24,7 +24,7 @@ void effacer_console()
 #endif
 }
 /**
-* Fonction qui permet de faire une pause dans la console selon l'OS.
+* Fonction qui permet de faire une pause dans la console selon l'OS. 
 **/
 void pause_console()
 {
