@@ -19,6 +19,9 @@ int tour = 0;
 * @param tab le tableau de jeu.
 * @param numnom le numéro du pion.
 * @return l'emplacement du pion (1 ou 2 ou 3 ou 4).
+*
+* Degré de confiance : 95% (selon la taille du tableau (paire ou impaire), le reperage peut-être raté mais pas de plantage).
+* Complexité : n²
 **/
 int position_tableau(Tab2Dint tab, int numnom)
 {
@@ -63,13 +66,16 @@ int position_tableau(Tab2Dint tab, int numnom)
 * @param tab le tableau dans lequel il faut rechercher x..
 * @param x le nombre à rechercher.
 * @return le tableau qui contient les emplacements de x.
+*
+* Degré de confiance : 100%
+* Complexité : n
 **/
 Tab1Dint comptage_dans_tableau(Tab1Dint tab, int x)
 {
 	// On crée le tableau qui sera retourné à la fin.
 	Tab1Dint fin;
 
-	// Boucle qui parcours le tableau tab et ajoute la position de x dans fin. 
+	// Boucle qui parcours le tableau tab et ajoute la position de x dans fin.
 	for (int i = 0; i < tab.size(); i++)
 	{
 		if (tab[i] == x)
@@ -84,6 +90,9 @@ Tab1Dint comptage_dans_tableau(Tab1Dint tab, int x)
 * Fonction qui choisi aléatoirement un élément dans le tableau.
 * @param tab le tableau dans lequel il faut choisir un élément.
 * @return un élément de la liste choisi aléatoirement.
+*
+* Degré de confiance : 100%
+* Complexité : 2
 **/
 int alea_dans_tab(Tab1Dint tab)
 {
@@ -103,125 +112,23 @@ int alea_dans_tab(Tab1Dint tab)
 	else
 	{
 		tour++;
-		// Retourne le première élément du tableau.
+		// Retourne le premier élément du tableau.
 		return tab[0];
 	}
-}
-
-/**
-* Fonction qui donne les déplacements possible d'un pion.
-* @param t le tableau de jeu.
-* @param numnom le numéro du pion.
-* @return un tableau contenant les déplacements possible.
-**/
-Tab1Dstring deplacement_possible(Tab2Dint t, int numnom)
-{
-	// Initialisation des variables.
-	// x et y la position du pion, z la condition pour que la boucle de verification s'arrete (tout en bas de la fonction).
-	// t1 le tableau contenant les déplacements possibles.
-	// choix_deplac la cdc contenant le déplacement à renvoyer.
-	int x, y = 0;
-	Tab1Dstring t1;
-
-	// Double boucle qui parcours le tableau 2D.
-	for (int i = 0; i < t.size(); i++)
-	{
-		for (int j = 0; j < t[i].size(); j++)
-		{
-			// Une fois le pion trouvé, mettre sa position dans x et y.
-			if (t[i][j] == numnom)
-			{
-				x = i;
-				y = j;
-			}
-		}
-	}
-	// Grande serie de test pour trouver les déplacements possibles.
-	// Si x != 0 donc si le pion n'est pas sur la première ligne du tableau 2D.
-	if (x != 0)
-	{
-		// Si la case au dessus n'est pas casser ou pas prise par un autre pion, H possible.
-		if (t[x - 1][y] == 0)
-		{
-			t1.push_back("H");
-		}
-		// Si y != 0 donc si le pion n'est pas sur la première colonne.
-		if (y != 0)
-		{
-			// Si la case au dessus et à gauche n'est pas cassé ou pas prise par un autre pion, HG possible.
-			if (t[x - 1][y - 1] == 0)
-			{
-				t1.push_back("HG");
-			}
-		}
-		// Si y + 1 != taille de la x ligne donc si le pion n'est pas sur la dernière colonne.
-		if (y + 1 != t[x].size())
-		{
-			// Si la case au dessus et à droite n'est pas cassé ou pas prise par un autre pion, HD possible.
-			if (t[x - 1][y + 1] == 0)
-			{
-				t1.push_back("HD");
-			}
-		}
-	}
-	// Si x + 1 != taille des colonnes donc si le pion n'est pas sur la dernière ligne du tableau 2D.
-	if (x + 1 != t.size())
-	{
-		// Si la case en dessous n'est pas casser ou pas prise par un autre pion, B possible.
-		if (t[x + 1][y] == 0)
-		{
-			t1.push_back("B");
-		}
-		// Si y != 0 donc si le pion n'est pas sur la première colonne.
-		if (y != 0)
-		{
-			// Si la case en dessous et à gauche n'est pas cassé ou pas prise par un autre pion, BG possible.
-			if (t[x + 1][y - 1] == 0)
-			{
-				t1.push_back("BG");
-			}
-		}
-		// Si y + 1 != taille de la x ligne donc si le pion n'est pas sur la dernière colonne.
-		if (y + 1 != t[x].size())
-		{
-			// Si la case en dessous et à droite n'est pas cassé ou pas prise par un autre pion, BD possible.
-			if (t[x + 1][y + 1] == 0)
-			{
-				t1.push_back("BD");
-			}
-		}
-	}
-	// Si y != 0 donc si le pion d'est pas sur la première colonne.
-	if (y != 0)
-	{
-		// Si la case à gauche est vide alors G possible.
-		if (t[x][y - 1] == 0)
-		{
-			t1.push_back("G");
-		}
-	}
-	// Si y + 1 != taille de la x ligne donc si le pion n'est pas sur la dernière colonne.
-	if (y + 1 != t[x].size())
-	{
-		// Si la case à droite est vide alors D possible.
-		if (t[x][y + 1] == 0)
-		{
-			t1.push_back("D");
-		}
-	}
-	return t1;
 }
 
 /**
 * Fonction qui donne le nombre le plus grand, contenu dans le tableau.
 * @param t le tableau dans lequel rechercher.
 * @return le nombre max.
+*
+* Degré de confiance : 100%
+* Complexité : n
 **/
 int superieur(Tab1Dint t)
 {
 	// Contient le nombre max qui sera renvoyé.
 	int max = 0;
-
 	// Boucle qui parcours la liste et qui prend le plus grand.
 	for (int i = 0; i < t.size(); i++)
 	{
@@ -238,6 +145,9 @@ int superieur(Tab1Dint t)
 * @param t le tableau de jeu.
 * @param numnom le numéro du pion.
 * @return le nombre de déplacement maximum que l'on peut faire sur une casse (la casse en question n'est pas retourné).
+*
+* Degré de confiance : 100%
+* Complexité : n²
 **/
 int double_verif(Tab2Dint t, int numnom)
 {
@@ -246,7 +156,7 @@ int double_verif(Tab2Dint t, int numnom)
 	Tab1Dint tailles;
 
 	// t1 contiendera les déplacements possible du pion numnom.
-	t1 = deplacement_possible(t, numnom);
+	t1 = deplacement_possible(t, numnom, -1);
 
 	// Si t1 contient le déplacement "H".
 	if (In(t1, "H"))
@@ -255,7 +165,7 @@ int double_verif(Tab2Dint t, int numnom)
 		ttemp = deplacement(t, numnom, "H");
 
 		// On recherche les déplacement possible du pion que l'on a déplacé temporairement.
-		t1temp = deplacement_possible(ttemp, numnom);
+		t1temp = deplacement_possible(ttemp, numnom, -1);
 
 		// Met le nombre de déplacement possible dans tailles.
 		tailles.push_back(t1temp.size());
@@ -263,43 +173,43 @@ int double_verif(Tab2Dint t, int numnom)
 	if (In(t1, "B"))
 	{
 		ttemp = deplacement(t, numnom, "B");
-		t1temp = deplacement_possible(ttemp, numnom);
+		t1temp = deplacement_possible(ttemp, numnom, -1);
 		tailles.push_back(t1temp.size());
 	}
 	if (In(t1, "G"))
 	{
 		ttemp = deplacement(t, numnom, "G");
-		t1temp = deplacement_possible(ttemp, numnom);
+		t1temp = deplacement_possible(ttemp, numnom, -1);
 		tailles.push_back(t1temp.size());
 	}
 	if (In(t1, "D"))
 	{
 		ttemp = deplacement(t, numnom, "D");
-		t1temp = deplacement_possible(ttemp, numnom);
+		t1temp = deplacement_possible(ttemp, numnom, -1);
 		tailles.push_back(t1temp.size());
 	}
 	if (In(t1, "HG"))
 	{
 		ttemp = deplacement(t, numnom, "HG");
-		t1temp = deplacement_possible(ttemp, numnom);
+		t1temp = deplacement_possible(ttemp, numnom, -1);
 		tailles.push_back(t1temp.size());
 	}
 	if (In(t1, "HD"))
 	{
 		ttemp = deplacement(t, numnom, "HD");
-		t1temp = deplacement_possible(ttemp, numnom);
+		t1temp = deplacement_possible(ttemp, numnom, -1);
 		tailles.push_back(t1temp.size());
 	}
 	if (In(t1, "BD"))
 	{
 		ttemp = deplacement(t, numnom, "BD");
-		t1temp = deplacement_possible(ttemp, numnom);
+		t1temp = deplacement_possible(ttemp, numnom, -1);
 		tailles.push_back(t1temp.size());
 	}
 	if (In(t1, "BG"))
 	{
 		ttemp = deplacement(t, numnom, "BG");
-		t1temp = deplacement_possible(ttemp, numnom);
+		t1temp = deplacement_possible(ttemp, numnom, -1);
 		tailles.push_back(t1temp.size());
 	}
 
@@ -311,6 +221,9 @@ int double_verif(Tab2Dint t, int numnom)
 * Fonction qui déduit le déplacement du pion à effectuer en choisissant un déplacement avec le plus de possibilité.
 * @param t le tableau de jeu.
 * @return le déplacement choisi.
+*
+* Degré de confiance : 100%
+* Complexité : n
 **/
 string deduire_deplace(Tab1Dint t)
 {
@@ -350,6 +263,9 @@ string deduire_deplace(Tab1Dint t)
 * @param t le tableau de jeu.
 * @param numnom le numéro du pion.
 * @return le déplacement que doit effectuer le pion ordi.
+*
+* Degré de confiance : 100%
+* Complexité : n²
 **/
 string demande_deplace_ordi(Tab2Dint t, int numnom)
 {
@@ -364,9 +280,8 @@ string demande_deplace_ordi(Tab2Dint t, int numnom)
 
 	// Contient le résultat finale, le déplacement choisi à renvoyer.
 	string choix_deplac;
-
 	// On cherche les déplacements initiaux possible à étudier.
-	t1 = deplacement_possible(t, numnom);
+	t1 = deplacement_possible(t, numnom, -1);
 
 	// Si t1 contient le déplacement "H".
 	if (In(t1, "H"))
@@ -375,7 +290,7 @@ string demande_deplace_ordi(Tab2Dint t, int numnom)
 		ttemp = deplacement(t, numnom, "H");
 
 		// On recherche les déplacement possible du pion que l'on a déplacé temporairement.
-		t1tempH = deplacement_possible(ttemp, numnom);
+		t1tempH = deplacement_possible(ttemp, numnom, -1);
 
 		// On utilise double_verif pour une précision accru et on additionne le résultat avec le nombre de déplacement du pion du tableau temporaire.
 		tempH = double_verif(ttemp, numnom) + t1tempH.size();
@@ -383,43 +298,43 @@ string demande_deplace_ordi(Tab2Dint t, int numnom)
 	if (In(t1, "B"))
 	{
 		ttemp = deplacement(t, numnom, "B");
-		t1tempB = deplacement_possible(ttemp, numnom);
+		t1tempB = deplacement_possible(ttemp, numnom, -1);
 		tempB = double_verif(ttemp, numnom) + t1tempB.size();
 	}
 	if (In(t1, "G"))
 	{
 		ttemp = deplacement(t, numnom, "G");
-		t1tempG = deplacement_possible(ttemp, numnom);
+		t1tempG = deplacement_possible(ttemp, numnom, -1);
 		tempG = double_verif(ttemp, numnom) + t1tempG.size();
 	}
 	if (In(t1, "D"))
 	{
 		ttemp = deplacement(t, numnom, "D");
-		t1tempD = deplacement_possible(ttemp, numnom);
+		t1tempD = deplacement_possible(ttemp, numnom, -1);
 		tempD = double_verif(ttemp, numnom) + t1tempD.size();
 	}
 	if (In(t1, "HG"))
 	{
 		ttemp = deplacement(t, numnom, "HG");
-		t1tempHG = deplacement_possible(ttemp, numnom);
+		t1tempHG = deplacement_possible(ttemp, numnom, -1);
 		tempHG = double_verif(ttemp, numnom) + t1tempHG.size();
 	}
 	if (In(t1, "HD"))
 	{
 		ttemp = deplacement(t, numnom, "HD");
-		t1tempHD = deplacement_possible(ttemp, numnom);
+		t1tempHD = deplacement_possible(ttemp, numnom, -1);
 		tempHD = double_verif(ttemp, numnom) + t1tempHD.size();
 	}
 	if (In(t1, "BD"))
 	{
 		ttemp = deplacement(t, numnom, "BD");
-		t1tempBD = deplacement_possible(ttemp, numnom);
+		t1tempBD = deplacement_possible(ttemp, numnom, -1);
 		tempBD = double_verif(ttemp, numnom) + t1tempBD.size();
 	}
 	if (In(t1, "BG"))
 	{
 		ttemp = deplacement(t, numnom, "BG");
-		t1tempBG = deplacement_possible(ttemp, numnom);
+		t1tempBG = deplacement_possible(ttemp, numnom, -1);
 		tempBG = double_verif(ttemp, numnom) + t1tempBG.size();
 	}
 
@@ -492,7 +407,7 @@ string demande_deplace_ordi(Tab2Dint t, int numnom)
 
 		// Affiche chaque élément du tableau.
 		cout << endl;
-		affichage_deplacement_possible(t1);
+		affichage_deplacement_possible(t1, numnom);
 		cout << endl << "-------------------------------" << endl;
 	}
 	return choix_deplac;
@@ -502,24 +417,15 @@ string demande_deplace_ordi(Tab2Dint t, int numnom)
 * Fonction qui utilise les fonctions précedantes pour déduire le bloc à casser.
 * @param t le tableau de jeu.
 * @return le tableau de jeu avec le bloc cassé (renvoi le tableau complet pour respecter le programme de base.
+*
+* Degré de confiance : 100%
+* Complexité : n²
 **/
 Tab2Dint casse_bloc_ordi(Tab2Dint t)
 {
-	int x, y = 0;
-
-	// Double boucle qui parcours le tableau 2D.
-	for (int i = 0; i < t.size(); i++)
-	{
-		for (int j = 0; j < t[i].size(); j++)
-		{
-			// Une fois le pion trouvé, mettre sa position dans x et y.
-			if (t[i][j] == 2)
-			{
-				x = i;
-				y = j;
-			}
-		}
-	}
+	// On recupère la position du pion de l'ordi et on l'a met dans x et y.
+	Tab1Dint t1 = position_pion(t, 2);
+	int x = t1[0], y = t1[1];
 
 	// Appel de la fonction qui déduit le déplacement du pion pour voir où le joueur pourrai probablement déplacer son pion.
 	string ou = demande_deplace_ordi(t, 2);
