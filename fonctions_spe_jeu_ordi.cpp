@@ -69,7 +69,7 @@ Tab1Dint comptage_dans_tableau(Tab1Dint tab, int x)
 	// On crée le tableau qui sera retourné à la fin.
 	Tab1Dint fin;
 
-	// Boucle qui parcours le tableau tab et ajoute la position de x dans fin.
+	// Boucle qui parcours le tableau tab et ajoute la position de x dans fin. 
 	for (int i = 0; i < tab.size(); i++)
 	{
 		if (tab[i] == x)
