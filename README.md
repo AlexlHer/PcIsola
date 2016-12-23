@@ -1,7 +1,8 @@
 # PcIsola
 ## Version 5.0
 Jeu Isola en C++.
-
+Programme créé pour l'info111. 2eme projet : Jeu Isola.
+L1 MPI Semestre 1. Présenté au prof le 15/12/16 à 9:30.
 
 ## Changelog :
 
