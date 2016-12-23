@@ -1,6 +1,6 @@
 // --------------------------------
 // Auteur : Alexandre l'Heritier
-// PcIsola v4.1
+// PcIsola v5.0
 // --------------------------------
 #include <iostream>
 #include <fstream>
@@ -9,10 +9,12 @@
 #include "fonctions_isola.h"
 #include "fonctions_spe_jeu_course.h"
 #include "fonctions_spe_jeu_ordi.h"
+#include "fonctions_spe_jeu_ordi_cavalier.h"
+#include "fonctions_spe_jeu_cavalier.h"
 
 using namespace std;
 
-string version_prog = "4.1";
+string version_prog = "5.0";
 
 // Mes raccourcis :
 typedef vector<vector<int>> Tab2Dint;
@@ -20,6 +22,15 @@ typedef vector<vector<int>> Tab2Dint;
 
 /**
  * Fonction secondaire qui permet de lancer le jeu classique.
+ * @param type_tab le type de tableau à initialiser.
+ * @param tab_de_jeu le tableau de jeu (pour lancer une sauvegarde).
+ * @param nb_tour le nombre de tour à restaurer (pour lancer une sauvegarde).
+ * @param nom1 le nom du joueur 1 (pour lancer une sauvegarde).
+ * @param nom2 le nom du joueur 2 (pour lancer une sauvegarde).
+ * @param gagnant le nom du joueur qui avait le tour (pour lancer une sauvegarde).
+ *
+ * Degré de confiance : 95% (bug si une lettre est entrée dans la demande de la taille du tableau).
+ * Complexité : n²
 **/
 void jeu_classique(string type_tab, Tab2Dint tab_de_jeu, int nb_tour, string nom1, string nom2, string gagnant)
 {
@@ -41,20 +52,25 @@ void jeu_classique(string type_tab, Tab2Dint tab_de_jeu, int nb_tour, string nom
 		getline(cin, nom1);
 		cout << endl << "Quelle est le nom du deuxième joueur : ";
 		getline(cin, nom2);
-		cout << endl << "Quelle est la taille du tableau x (Par défaut : 8) : ";
-		cin >> taille_tab_x;
-		cout << endl << "Quelle est la taille du tableau y (Par défaut : 6) : ";
-		cin >> taille_tab_y;
+		do
+		{
+			cout << endl << "Quelle est la taille du tableau x : ";
+			cin >> taille_tab_x;
+			cin.clear();
+			cout << endl << "Quelle est la taille du tableau y (max : 26) : ";
+			cin >> taille_tab_y;
+			cin.clear();
+		} while (taille_tab_y > 26);
 
 		// On initialise le tableau.
 		t = initialisation_tableau(taille_tab_x, taille_tab_y, type_tab);
 		cout << endl;
-		gagnant = nom2;
+		gagnant = "joueur2";
 	}
 	// Tant que personne n'a gagné.
 	while (possibl_deplac(t, 2) && possibl_deplac(t, 3))
 	{
-		if (gagnant == nom2)
+		if (gagnant == "joueur2")
 		{
 			sauvegarde("temp", "classique", t, nb_tour, nom1, nom2, gagnant);
 			// On ajoute un tour.
@@ -83,6 +99,17 @@ void jeu_classique(string type_tab, Tab2Dint tab_de_jeu, int nb_tour, string nom
 				deplace = demande_deplace(t, nom1, 2);
 			}
 
+			if (deplace == "Q")
+			{
+				effacer_console();
+				cout << "Voila le tableau :" << endl;
+				affichage(t);
+				cout << "Au revoir !" << endl;
+				remove("temp_PcIsola.save");
+				pause_console();
+				exit(0);
+			}
+
 			// On déplace le pion selon la demande du joueur.
 			t = deplacement(t, 2, deplace);
 
@@ -93,7 +120,7 @@ void jeu_classique(string type_tab, Tab2Dint tab_de_jeu, int nb_tour, string nom
 			t = casse_bloc(t);
 
 			// On rempli gagnant au cas où il gagne.
-			gagnant = nom1;
+			gagnant = "joueur1";
 
 			effacer_console();
 		}
@@ -115,15 +142,31 @@ void jeu_classique(string type_tab, Tab2Dint tab_de_jeu, int nb_tour, string nom
 				affichage(t);
 				deplace = demande_deplace(t, nom2, 3);
 			}
+
+			if (deplace == "Q")
+			{
+				effacer_console();
+				cout << "Voila le tableau :" << endl;
+				affichage(t);
+				cout << "Au revoir !" << endl;
+				remove("temp_PcIsola.save");
+				pause_console();
+				exit(0);
+			}
+
 			t = deplacement(t, 3, deplace);
 			effacer_console();
 			affichage(t);
 			t = casse_bloc(t);
-			gagnant = nom2;
+			gagnant = "joueur2";
 		}
 	}
 
 	effacer_console();
+
+	// On remet le bon nom dans gagnant.
+	if (gagnant == "joueur2") gagnant = nom2;
+	else gagnant = nom1;
 
 	// On affiche les scores et le vainqueur.
 	cout << "Le gagnant est " << gagnant << endl;
@@ -136,6 +179,14 @@ void jeu_classique(string type_tab, Tab2Dint tab_de_jeu, int nb_tour, string nom
 
 /**
  * Fonction secondaire qui permet de lancer le jeu course.
+ * @param tab_de_jeu le tableau de jeu (pour lancer une sauvegarde).
+ * @param nb_tour le nombre de tour à restaurer (pour lancer une sauvegarde).
+ * @param nom1 le nom du joueur 1 (pour lancer une sauvegarde).
+ * @param nom2 le nom du joueur 2 (pour lancer une sauvegarde).
+ * @param gagnant le nom du joueur qui avait le tour (pour lancer une sauvegarde).
+ *
+ * Degré de confiance : 95% (bug si une lettre est entrée dans la demande de la taille du tableau).
+ * Complexité : n²
 **/
 void jeu_course(Tab2Dint tab_de_jeu, int nb_tour, string nom1, string nom2, string gagnant)
 {
@@ -157,20 +208,25 @@ void jeu_course(Tab2Dint tab_de_jeu, int nb_tour, string nom1, string nom2, stri
 		getline(cin, nom1);
 		cout << endl << "Quelle est le nom du deuxième joueur : ";
 		getline(cin, nom2);
-		cout << endl << "Quelle est la taille du tableau x (Par défaut : 8) : ";
-		cin >> taille_tab_x;
-		cout << endl << "Quelle est la taille du tableau y (Par défaut : 6) : ";
-		cin >> taille_tab_y;
+		do
+		{
+			cout << endl << "Quelle est la taille du tableau x : ";
+			cin >> taille_tab_x;
+			cin.clear();
+			cout << endl << "Quelle est la taille du tableau y (max : 26) : ";
+			cin >> taille_tab_y;
+			cin.clear();
+		} while (taille_tab_x > 26 || taille_tab_y > 26);
 
 		// On initialise le tableau.
 		t = initialisation_tableau(taille_tab_x, taille_tab_y, "normal");
 		cout << endl;
-		gagnant = nom2;
+		gagnant = "joueur2";
 	}
 	// Tant que personne n'a gagné.
 	while (gagner(t, 2) && gagner(t, 3) && possibl_deplac(t, 2) && possibl_deplac(t, 3))
 	{
-		if (gagnant == nom2)
+		if (gagnant == "joueur2")
 		{
 			// On ajoute un tour.
 			nb_tour++;
@@ -198,6 +254,17 @@ void jeu_course(Tab2Dint tab_de_jeu, int nb_tour, string nom1, string nom2, stri
 				deplace = demande_deplace(t, nom1, 2);
 			}
 
+			if (deplace == "Q")
+			{
+				effacer_console();
+				cout << "Voila le tableau :" << endl;
+				affichage(t);
+				cout << "Au revoir !" << endl;
+				remove("temp_PcIsola.save");
+				pause_console();
+				exit(0);
+			}
+
 			// On déplace le pion selon la demande du joueur.
 			t = deplacement(t, 2, deplace);
 
@@ -208,12 +275,12 @@ void jeu_course(Tab2Dint tab_de_jeu, int nb_tour, string nom1, string nom2, stri
 			t = casse_bloc(t);
 
 			// On rempli gagnant au cas où il gagne.
-			gagnant = nom1;
+			gagnant = "joueur1";
 
 			effacer_console();
 		}
 		// Au tour du deuxième joueur.
-		if (possibl_deplac(t, 2))
+		if (gagner(t, 2) && gagner(t, 3) && possibl_deplac(t, 2))
 		{
 			sauvegarde("temp", "course", t, nb_tour, nom1, nom2, gagnant);
 			affichage(t);
@@ -230,15 +297,31 @@ void jeu_course(Tab2Dint tab_de_jeu, int nb_tour, string nom1, string nom2, stri
 				affichage(t);
 				deplace = demande_deplace(t, nom2, 3);
 			}
+
+			if (deplace == "Q")
+			{
+				effacer_console();
+				cout << "Voila le tableau :" << endl;
+				affichage(t);
+				cout << "Au revoir !" << endl;
+				remove("temp_PcIsola.save");
+				pause_console();
+				exit(0);
+			}
+
 			t = deplacement(t, 3, deplace);
 			effacer_console();
 			affichage(t);
 			t = casse_bloc(t);
-			gagnant = nom2;
+			gagnant = "joueur2";
 		}
 	}
 
 	effacer_console();
+
+	// On remet le bon nom dans gagnant.
+	if (gagnant == "joueur2") gagnant = nom2;
+	else gagnant = nom1;
 
 	// On affiche les scores et le vainqueur.
 	cout << "Le gagnant est " << gagnant << endl;
@@ -251,6 +334,15 @@ void jeu_course(Tab2Dint tab_de_jeu, int nb_tour, string nom1, string nom2, stri
 
 /**
 * Fonction secondaire qui permet de lancer le jeu ordi.
+* @param type_tab le type de tableau à initialiser.
+* @param tab_de_jeu le tableau de jeu (pour lancer une sauvegarde).
+* @param nb_tour le nombre de tour à restaurer (pour lancer une sauvegarde).
+* @param nom1 le nom du joueur 1 (pour lancer une sauvegarde).
+* @param nom2 le nom du joueur 2 (pour lancer une sauvegarde).
+* @param gagnant le nom du joueur qui avait le tour (pour lancer une sauvegarde).
+*
+* Degré de confiance : 95% (bug si une lettre est entrée dans la demande de la taille du tableau).
+* Complexité : n²
 **/
 void jeu_ordi(string type_tab, Tab2Dint tab_de_jeu, int nb_tour, string nom1, string nom2, string gagnant)
 {
@@ -270,21 +362,26 @@ void jeu_ordi(string type_tab, Tab2Dint tab_de_jeu, int nb_tour, string nom1, st
 		// On demande les infos des joueurs.
 		cout << "Quelle est votre nom : ";
 		getline(cin, nom1);
-		cout << endl << "Quelle est la taille du tableau x (Par défaut : 8) : ";
-		cin >> taille_tab_x;
-		cout << endl << "Quelle est la taille du tableau y (Par défaut : 6) : ";
-		cin >> taille_tab_y;
+		do
+		{
+			cout << endl << "Quelle est la taille du tableau x : ";
+			cin >> taille_tab_x;
+			cin.clear();
+			cout << endl << "Quelle est la taille du tableau y (max : 26) : ";
+			cin >> taille_tab_y;
+			cin.clear();
+		} while (taille_tab_x > 26 || taille_tab_y > 26);
 
 		// On initialise le tableau.
 		t = initialisation_tableau(taille_tab_x, taille_tab_y, type_tab);
 		cout << endl;
-		gagnant = nom2;
+		gagnant = "joueur2";
 	}
 
 	// Tant que personne n'a gagné.
 	while (possibl_deplac(t, 2) && possibl_deplac(t, 3))
 	{
-		if (gagnant == nom2)
+		if (gagnant == "joueur2")
 		{
 			// On ajoute un tour.
 			nb_tour++;
@@ -312,6 +409,17 @@ void jeu_ordi(string type_tab, Tab2Dint tab_de_jeu, int nb_tour, string nom1, st
 				deplace = demande_deplace(t, nom1, 2);
 			}
 
+			if (deplace == "Q")
+			{
+				effacer_console();
+				cout << "Voila le tableau :" << endl;
+				affichage(t);
+				cout << "Au revoir !" << endl;
+				remove("temp_PcIsola.save");
+				pause_console();
+				exit(0);
+			}
+
 			// On déplace le pion selon la demande du joueur.
 			t = deplacement(t, 2, deplace);
 
@@ -322,7 +430,7 @@ void jeu_ordi(string type_tab, Tab2Dint tab_de_jeu, int nb_tour, string nom1, st
 			t = casse_bloc(t);
 
 			// On rempli gagnant au cas où il gagne.
-			gagnant = nom1;
+			gagnant = "joueur1";
 
 			effacer_console();
 		}
@@ -343,12 +451,16 @@ void jeu_ordi(string type_tab, Tab2Dint tab_de_jeu, int nb_tour, string nom1, st
 			cout << "Bloc cassé par l'ordi : ";
 			t = casse_bloc_ordi(t);
 			cout << endl;
-			gagnant = nom2;
+			gagnant = "joueur2";
 			pause_console();
 		}
 	}
 
 	effacer_console();
+
+	// On remet le bon nom dans gagnant.
+	if (gagnant == "joueur2") gagnant = nom2;
+	else gagnant = nom1;
 
 	// On affiche les scores et le vainqueur.
 	cout << "Le gagnant est " << gagnant << endl;
@@ -361,8 +473,16 @@ void jeu_ordi(string type_tab, Tab2Dint tab_de_jeu, int nb_tour, string nom1, st
 
 /**
 * Fonction secondaire qui permet de lancer le jeu survie.
+* @param tab_de_jeu le tableau de jeu (pour lancer une sauvegarde).
+* @param nb_tour le nombre de tour à restaurer (pour lancer une sauvegarde).
+* @param nom1 le nom du joueur 1 (pour lancer une sauvegarde).
+* @param nom2 le nom du joueur 2 (pour lancer une sauvegarde).
+* @param gagnant le nom du joueur qui avait le tour (pour lancer une sauvegarde).
+*
+* Degré de confiance : 95% (bug si une lettre est entrée dans la demande de la taille du tableau).
+* Complexité : n²
 **/
-void jeu_survie(Tab2Dint tab_de_jeu, int nb_tour, string nom1, string nom2, string gagnant)
+void jeu_survie(string type_tab, Tab2Dint tab_de_jeu, int nb_tour, string nom1, string nom2, string gagnant)
 {
 	// Initialisation des variables.
 	// nb_tour permet de compter les tours, taille_tab_x et taille_tab_y contiennent la taille du tableau choisi par l'utilisateur.
@@ -380,13 +500,18 @@ void jeu_survie(Tab2Dint tab_de_jeu, int nb_tour, string nom1, string nom2, stri
 		// On demande les infos des joueurs.
 		cout << "Quelle est votre nom : ";
 		getline(cin, nom1);
-		cout << endl << "Quelle est la taille du tableau x (Par défaut : 8) : ";
-		cin >> taille_tab_x;
-		cout << endl << "Quelle est la taille du tableau y (Par défaut : 6) : ";
-		cin >> taille_tab_y;
+		do
+		{
+			cout << endl << "Quelle est la taille du tableau x : ";
+			cin >> taille_tab_x;
+			cin.clear();
+			cout << endl << "Quelle est la taille du tableau y (max : 26) : ";
+			cin >> taille_tab_y;
+			cin.clear();
+		} while (taille_tab_x > 26 || taille_tab_y > 26);
 
 		// On initialise le tableau.
-		t = initialisation_tableau(taille_tab_x, taille_tab_y, "survie");
+		t = initialisation_tableau(taille_tab_x, taille_tab_y, type_tab);
 		cout << endl;
 	}
 	// Tant que personne n'a gagné.
@@ -419,13 +544,24 @@ void jeu_survie(Tab2Dint tab_de_jeu, int nb_tour, string nom1, string nom2, stri
 			deplace = demande_deplace(t, nom1, 2);
 		}
 
+		if (deplace == "Q")
+		{
+			effacer_console();
+			cout << "Voila le tableau :" << endl;
+			affichage(t);
+			cout << "Au revoir !" << endl;
+			remove("temp_PcIsola.save");
+			pause_console();
+			exit(0);
+		}
+
 		// On déplace le pion selon la demande du joueur.
 		t = deplacement(t, 2, deplace);
 
 		effacer_console();
 		affichage(t);
 		// On rempli gagnant au cas où il gagne.
-		gagnant = nom1;
+		gagnant = "joueur1";
 		effacer_console();
 
 		// Au tour du deuxième joueur.
@@ -445,6 +581,10 @@ void jeu_survie(Tab2Dint tab_de_jeu, int nb_tour, string nom1, string nom2, stri
 
 	effacer_console();
 
+	// On remet le bon nom dans gagnant.
+	if (gagnant == "joueur2") gagnant = nom2;
+	else gagnant = nom1;
+
 	// On affiche les scores et le vainqueur.
 	cout << "Fin" << endl;
 	cout << "Vous avez survécu " << nb_tour << " tours !" << endl;
@@ -455,8 +595,307 @@ void jeu_survie(Tab2Dint tab_de_jeu, int nb_tour, string nom1, string nom2, stri
 }
 
 /**
+* Fonction secondaire qui permet de lancer le jeu classique.
+* @param type_tab le type de tableau à initialiser.
+* @param tab_de_jeu le tableau de jeu (pour lancer une sauvegarde).
+* @param nb_tour le nombre de tour à restaurer (pour lancer une sauvegarde).
+* @param nom1 le nom du joueur 1 (pour lancer une sauvegarde).
+* @param nom2 le nom du joueur 2 (pour lancer une sauvegarde).
+* @param gagnant le nom du joueur qui avait le tour (pour lancer une sauvegarde).
+*
+* Degré de confiance : 95% (bug si une lettre est entrée dans la demande de la taille du tableau).
+* Complexité : n²
+**/
+void jeu_cavalier(string type_tab, Tab2Dint tab_de_jeu, int nb_tour, string nom1, string nom2, string gagnant)
+{
+	// Initialisation des variables.
+	// nb_tour permet de compter les tours, taille_tab_x et taille_tab_y contiennent la taille du tableau choisi par l'utilisateur.
+	// nom1 est le nom du premier joueur, nom2 est le nom du deuxième joueur, deplace contient le déplacement choisi par l'utilisateur, gagnant contient le nom du gagnant.
+	int taille_tab_x = 0, taille_tab_y = 0;
+	string deplace;
+	Tab2Dint t;
+
+	if (nom1 != " ")
+	{
+		t = tab_de_jeu;
+	}
+	else
+	{
+		// On demande les infos des joueurs.
+		cout << "Quelle est le nom du premier joueur : ";
+		getline(cin, nom1);
+		cout << endl << "Quelle est le nom du deuxième joueur : ";
+		getline(cin, nom2);
+		do
+		{
+			cout << endl << "Quelle est la taille du tableau x : ";
+			cin >> taille_tab_x;
+			cin.clear();
+			cout << endl << "Quelle est la taille du tableau y (max : 26) : ";
+			cin >> taille_tab_y;
+			cin.clear();
+		} while (taille_tab_x > 26 || taille_tab_y > 26);
+
+		// On initialise le tableau.
+		t = initialisation_tableau(taille_tab_x, taille_tab_y, type_tab);
+		cout << endl;
+		gagnant = "joueur2";
+	}
+	// Tant que personne n'a gagné.
+	while (possibl_deplac_cavalier(t, 2) && possibl_deplac_cavalier(t, 3))
+	{
+		if (gagnant == "joueur2")
+		{
+			sauvegarde("temp", "cavalier", t, nb_tour, nom1, nom2, gagnant);
+			// On ajoute un tour.
+			nb_tour++;
+
+			effacer_console();
+
+			// On affiche le tableau de jeu.
+			affichage(t);
+
+			cout << endl << "-------------------------------" << endl;
+			cout << "Isola Cavalier / Tour " << nb_tour << endl;
+
+			// On demande le déplacement au joueur.
+			deplace = demande_deplace_cavalier(t, nom1, 2);
+
+			while (deplace == "S")
+			{
+				sauvegarde("save", "cavalier", t, nb_tour, nom1, nom2, gagnant);
+				effacer_console();
+				cout << "Partie sauvegardée !" << endl;
+				pause_console();
+				effacer_console();
+				affichage(t);
+				// On demande le déplacement au joueur.
+				deplace = demande_deplace_cavalier(t, nom1, 2);
+			}
+
+			if (deplace == "Q")
+			{
+				effacer_console();
+				cout << "Voila le tableau :" << endl;
+				affichage(t);
+				cout << "Au revoir !" << endl;
+				remove("temp_PcIsola.save");
+				pause_console();
+				exit(0);
+			}
+
+			// On déplace le pion selon la demande du joueur.
+			t = deplacement_cavalier(t, 2, deplace);
+
+			effacer_console();
+			affichage(t);
+
+			// On demande au joueur de casser un bloc et on le casse.
+			t = casse_bloc(t);
+
+			// On rempli gagnant au cas où il gagne.
+			gagnant = "joueur1";
+
+			effacer_console();
+		}
+		// Au tour du deuxième joueur.
+		if (possibl_deplac_cavalier(t, 2))
+		{
+			sauvegarde("temp", "cavalier", t, nb_tour, nom1, nom2, gagnant);
+			affichage(t);
+			cout << endl << "-------------------------------" << endl;
+			cout << "Isola Cavalier / Tour " << nb_tour << endl;
+			deplace = demande_deplace_cavalier(t, nom2, 3);
+			while (deplace == "S")
+			{
+				sauvegarde("save", "cavalier", t, nb_tour, nom1, nom2, gagnant);
+				effacer_console();
+				cout << "Partie sauvegardée !" << endl;
+				pause_console();
+				effacer_console();
+				affichage(t);
+				deplace = demande_deplace_cavalier(t, nom2, 3);
+			}
+
+			if (deplace == "Q")
+			{
+				effacer_console();
+				cout << "Voila le tableau :" << endl;
+				affichage(t);
+				cout << "Au revoir !" << endl;
+				remove("temp_PcIsola.save");
+				pause_console();
+				exit(0);
+			}
+
+			t = deplacement_cavalier(t, 3, deplace);
+			effacer_console();
+			affichage(t);
+			t = casse_bloc(t);
+			gagnant = "joueur2";
+		}
+	}
+
+	effacer_console();
+
+	// On remet le bon nom dans gagnant.
+	if (gagnant == "joueur2") gagnant = nom2;
+	else gagnant = nom1;
+
+	// On affiche les scores et le vainqueur.
+	cout << "Le gagnant est " << gagnant << endl;
+	cout << "La partie s'est déroulée en " << nb_tour << " tours." << endl;
+	cout << "Tableau final :" << endl;
+	affichage(t);
+
+	pause_console();
+}
+
+/**
+* Fonction secondaire qui permet de lancer le jeu ordi.
+* @param type_tab le type de tableau à initialiser.
+* @param tab_de_jeu le tableau de jeu (pour lancer une sauvegarde).
+* @param nb_tour le nombre de tour à restaurer (pour lancer une sauvegarde).
+* @param nom1 le nom du joueur 1 (pour lancer une sauvegarde).
+* @param nom2 le nom du joueur 2 (pour lancer une sauvegarde).
+* @param gagnant le nom du joueur qui avait le tour (pour lancer une sauvegarde).
+*
+* Degré de confiance : 95% (bug si une lettre est entrée dans la demande de la taille du tableau).
+* Complexité : n²
+**/
+void jeu_cavalier_ordi(string type_tab, Tab2Dint tab_de_jeu, int nb_tour, string nom1, string nom2, string gagnant)
+{
+	// Initialisation des variables.
+	// nb_tour permet de compter les tours, taille_tab_x et taille_tab_y contiennent la taille du tableau choisi par l'utilisateur.
+	// nom1 est le nom du premier joueur, nom2 est le nom du deuxième joueur, deplace contient le déplacement choisi par l'utilisateur, gagnant contient le nom du gagnant.
+	int taille_tab_x = 0, taille_tab_y = 0;
+	string deplace;
+	Tab2Dint t;
+
+	if (nom1 != " ")
+	{
+		t = tab_de_jeu;
+	}
+	else
+	{
+		// On demande les infos des joueurs.
+		cout << "Quelle est votre nom : ";
+		getline(cin, nom1);
+		do
+		{
+			cout << endl << "Quelle est la taille du tableau x : ";
+			cin >> taille_tab_x;
+			cin.clear();
+			cout << endl << "Quelle est la taille du tableau y (max : 26) : ";
+			cin >> taille_tab_y;
+			cin.clear();
+		} while (taille_tab_x > 26 || taille_tab_y > 26);
+
+		// On initialise le tableau.
+		t = initialisation_tableau(taille_tab_x, taille_tab_y, type_tab);
+		cout << endl;
+		gagnant = "joueur2";
+	}
+
+	// Tant que personne n'a gagné.
+	while (possibl_deplac_cavalier(t, 2) && possibl_deplac_cavalier(t, 3))
+	{
+		if (gagnant == "joueur2")
+		{
+			// On ajoute un tour.
+			nb_tour++;
+			sauvegarde("temp", "ordi_cavalier", t, nb_tour, nom1, nom2, gagnant);
+			effacer_console();
+
+			// On affiche le tableau de jeu.
+			affichage(t);
+
+			cout << endl << "-------------------------------" << endl;
+			cout << "Isola Cavalier Ordi / Tour " << nb_tour << endl;
+
+			// On demande le déplacement au joueur.
+			deplace = demande_deplace_cavalier(t, nom1, 2);
+
+			while (deplace == "S")
+			{
+				sauvegarde("save", "ordi_cavalier", t, nb_tour, nom1, nom2, gagnant);
+				effacer_console();
+				cout << "Partie sauvegardée !" << endl;
+				pause_console();
+				effacer_console();
+				affichage(t);
+				// On demande le déplacement au joueur.
+				deplace = demande_deplace_cavalier(t, nom1, 2);
+			}
+
+			if (deplace == "Q")
+			{
+				effacer_console();
+				cout << "Voila le tableau :" << endl;
+				affichage(t);
+				cout << "Au revoir !" << endl;
+				remove("temp_PcIsola.save");
+				pause_console();
+				exit(0);
+			}
+
+			// On déplace le pion selon la demande du joueur.
+			t = deplacement_cavalier(t, 2, deplace);
+
+			effacer_console();
+			affichage(t);
+
+			// On demande au joueur de casser un bloc et on le casse.
+			t = casse_bloc(t);
+
+			// On rempli gagnant au cas où il gagne.
+			gagnant = "joueur1";
+
+			effacer_console();
+		}
+		// Au tour du deuxième joueur.
+		if (possibl_deplac_cavalier(t, 2) && possibl_deplac_cavalier(t, 3))
+		{
+			sauvegarde("temp", "ordi_cavalier", t, nb_tour, nom1, nom2, gagnant);
+			affichage(t);
+			cout << endl << "-------------------------------" << endl;
+			cout << "Isola Cavalier Ordi / Tour " << nb_tour << endl;
+			deplace = demande_deplace_ordi_cavalier(t, 3);
+			t = deplacement_cavalier(t, 3, deplace);
+			cout << "Déplacement choisi : " << deplace << endl;
+			pause_console();
+			effacer_console();
+			affichage(t);
+			cout << endl << "-------------------------------" << endl;
+			cout << "Bloc cassé par l'ordi : ";
+			t = casse_bloc_ordi_cavalier(t);
+			cout << endl;
+			gagnant = "joueur2";
+			pause_console();
+		}
+	}
+
+	effacer_console();
+
+	// On remet le bon nom dans gagnant.
+	if (gagnant == "joueur2") gagnant = nom2;
+	else gagnant = nom1;
+
+	// On affiche les scores et le vainqueur.
+	cout << "Le gagnant est " << gagnant << endl;
+	cout << "La partie s'est déroulée en " << nb_tour << " tours." << endl;
+	cout << "Tableau final :" << endl;
+	affichage(t);
+
+	pause_console();
+}
+
+/**
 * Fonction qui permet de restaurer une sauvegarde.
 * @param nom_sauvegarde le nom de la sauvegarde.
+*
+* Degré de confiance : 95% (bug si une lettre est entrée dans la demande de la taille du tableau).
+* Complexité : n²
 **/
 void restaure_save(string nom_sauvegarde)
 {
@@ -514,11 +953,16 @@ void restaure_save(string nom_sauvegarde)
 	if (type_jeu == "classique") jeu_classique("normal", t, nb_tour, nom1, nom2, gagnant);
 	if (type_jeu == "course") jeu_course(t, nb_tour, nom1, nom2, gagnant);
 	if (type_jeu == "ordi") jeu_ordi("ordi", t, nb_tour, nom1, nom2, gagnant);
-	if (type_jeu == "survie") jeu_survie(t, nb_tour, nom1, nom2, gagnant);
+	if (type_jeu == "survie") jeu_survie("normal", t, nb_tour, nom1, nom2, gagnant);
+	if (type_jeu == "cavalier") jeu_cavalier("normal", t, nb_tour, nom1, nom2, gagnant);
+	if (type_jeu == "ordi_cavalier") jeu_cavalier_ordi("normal", t, nb_tour, nom1, nom2, gagnant);
 }
 
 /**
  * Fonction principale qui permet de lancer l'une des fonctions secondaires.
+ *
+ * Degré de confiance : 100%
+ * Complexité : n²
 **/
 int main()
 {
@@ -553,6 +997,7 @@ int main()
 			restaure_save("temp_PcIsola.save");
 			boucle = 1;
 		}
+		remove("temp_PcIsola.save");
 	}
 	// On ferme le fichier.
 	fichier_verif.close();
@@ -560,18 +1005,21 @@ int main()
 	while (boucle == 0)
 	{
 		cout << endl << "Choisir le type de jeu :" << endl;
-		cout << "(A) Isola classique avec 2 joueurs." << endl;
-		cout << "(B) Isola classique course avec 2 joueurs." << endl;
-		cout << "(C) Isola classique avec 1 joueur et 1 ordinateur." << endl;
-		cout << "(D) Isola survie." << endl;
-		cout << "(E) Isola normal avec 2 joueurs. [Mode de jeu consignes]" << endl;
-		cout << "(F) Isola normal avec 1 joueur et 1 ordinateur. [Mode de jeu consignes]" << endl;
-		cout << "(G) Isola cavalier avec 2 joueurs. [Mode de jeu consignes]" << endl;
-		cout << "(S) Restauration de la sauvegarde.";
-
-		cout << endl << "Votre choix : ";
-		getline(cin, choix);
+		cout << "(A) Isola classique avec 2 joueurs (placement des pions auto)." << endl;
+		cout << "(B) Isola classique avec 2 joueurs (placement des pions manuel)." << endl;
+		cout << "(C) Isola classique avec 1 joueur et 1 ordinateur (placement des pions auto)." << endl;
+		cout << "(D) Isola classique avec 1 joueur et 1 ordinateur (placement des pions manuel)." << endl;
+		cout << "(E) Isola cavalier avec 2 joueurs (placement des pions auto)." << endl;
+		cout << "(F) Isola cavalier avec 2 joueurs (placement des pions manuel)." << endl;
+		cout << "(G) Isola cavalier avec 1 joueur et 1 ordinateur (placement des pions auto)." << endl;
+		cout << "(H) Isola cavalier avec 1 joueur et 1 ordinateur (placement des pions manuel)." << endl;
+		cout << "(I) Isola survie avec 2 joueurs (placement des pions auto)." << endl;
+		cout << "(J) Isola survie avec 2 joueurs (placement des pions manuel)." << endl;
+		cout << "(K) Isola course avec 2 joueurs." << endl << endl;
+		cout << "(S) Restauration de la sauvegarde." << endl;
 		cout << endl << "-------------------------------" << endl;
+		cout << "Votre choix : ";
+		getline(cin, choix);
 
 		// Converti une chaine de caractère minucule en majuscule.
 		choix = verif_maj_min(choix);
@@ -591,7 +1039,7 @@ int main()
 			regle(choix);
 			pause_console();
 			effacer_console();
-			jeu_course({ {} }, 0, " ", " ", " ");
+			jeu_classique("placement_choisi_par_joueur", { {} }, 0, " ", " ", " ");
 			boucle = 1;
 		}
 		if (choix == "C")
@@ -600,7 +1048,7 @@ int main()
 			regle(choix);
 			pause_console();
 			effacer_console();
-			jeu_ordi("normal", { {} }, 0, " ", " ", " ");
+			jeu_ordi("normal", { {} }, 0, " ", "Super_IA.exe", " ");
 			boucle = 1;
 		}
 		if (choix == "D")
@@ -609,7 +1057,7 @@ int main()
 			regle(choix);
 			pause_console();
 			effacer_console();
-			jeu_survie({ {} }, 0, " ", " ", " ");
+			jeu_ordi("placement_choisi_par_joueur_ordi", { {} }, 0, " ", "Super_IA.exe", " ");
 			boucle = 1;
 		}
 		if (choix == "E")
@@ -618,7 +1066,7 @@ int main()
 			regle(choix);
 			pause_console();
 			effacer_console();
-			jeu_classique("placement_choisi_par_joueur", { {} }, 0, " ", " ", " ");
+			jeu_cavalier("normal", { {} }, 0, " ", " ", " ");
 			boucle = 1;
 		}
 		if (choix == "F")
@@ -627,7 +1075,7 @@ int main()
 			regle(choix);
 			pause_console();
 			effacer_console();
-			jeu_ordi("placement_choisi_par_joueur_ordi", { {} }, 0, " ", " ", " ");
+			jeu_cavalier("placement_choisi_par_joueur", { {} }, 0, " ", " ", " ");
 			boucle = 1;
 		}
 		if (choix == "G")
@@ -636,9 +1084,46 @@ int main()
 			regle(choix);
 			pause_console();
 			effacer_console();
-			//jeu_cavalier();
+			jeu_cavalier_ordi("normal", { {} }, 0, " ", "Super_IA.exe", " ");
 			boucle = 1;
 		}
+		if (choix == "H")
+		{
+			effacer_console();
+			regle(choix);
+			pause_console();
+			effacer_console();
+			jeu_cavalier_ordi("placement_choisi_par_joueur_ordi", { {} }, 0, " ", "Super_IA.exe", " ");
+			boucle = 1;
+		}
+		if (choix == "I")
+		{
+			effacer_console();
+			regle(choix);
+			pause_console();
+			effacer_console();
+			jeu_survie("survie", { {} }, 0, " ", " ", " ");
+			boucle = 1;
+		}
+		if (choix == "J")
+		{
+			effacer_console();
+			regle(choix);
+			pause_console();
+			effacer_console();
+			jeu_survie("placement_choisi_par_joueur_survie", { {} }, 0, " ", " ", " ");
+			boucle = 1;
+		}
+		if (choix == "K")
+		{
+			effacer_console();
+			regle(choix);
+			pause_console();
+			effacer_console();
+			jeu_course({ {} }, 0, " ", " ", " ");
+			boucle = 1;
+		}
+
 		if (choix == "S")
 		{
 			restaure_save("save_PcIsola.save");
@@ -653,14 +1138,27 @@ int main()
 /**
 Changelog :
 
-A faire :
--Modes de jeu : Règles du prof : Cavalier.
--Option pour quitter sans fichier temp.
+v5.0 :
+Ajout du mode cavalier :
+-Sauvegarde adaptée.
+-Main adaptée.
+Optimisation : Création de fonctions "deplacement_possible", localement pour les modules "fonctions_isola" et 
+"fonctions_spe_jeu_cavalier", sur le modèle du module "fonctions_spe_jeu_ordi".
+Correction d'un bug critique de casse_bloc() (boucle qui tourne en boucle).
+Bug de save avec deux noms pareil.
+Affichage des déplacements refait.
+Affichage des differents modes de jeu rangé (Régles ajoutées).
+Fonction deplacement_possible de l'IA retiré et remplacé par deplacement_possible générale situé dans fonctions_isola.cpp (donc adaptation des fonctions de l'IA et de deplacement_possible).
+Protection ajouté pour éviter le dépassement de 26 cases dans une ligne, dans toutes les fonctions secondaire.
+Placement des pions manuel pour mode survie.
+Ajout d'une IA pour le mode Cavalier. Basée en grande partie sur l'IA du mode Classique.
 
 v4.1 :
-Un peu d'optimisation (-50 lignes).
+Un peu d'optimisation (-100 lignes : Mode normal inclut dans mode classique car les deux sont semblablent, 
+création de la fonction position_pion utilisée par plusieurs fonctions.).
 Bugs de sauvegarde résolu.
 Mode IA vs IA retiré. (Toutes les IA développées ne sont pas adaptable au programme).
+Option pour quitter en effacent le fichier temporaire.
 
 v4.0 :
 Fonction affichage_deplacement_possible crée pour afficher les déplacements de manière "carré" (au lieu de tous les déplacements sur la même ligne).
@@ -671,6 +1169,8 @@ Sauvegarde et sauvegarde temporaire ajoutées, adaptation avec:
 -Mode course.
 -Mode ordi.
 -Mode survie.
+-Mode normal.
+-Mode IA vs IA.
 
 v3.1 :
 Déplacement aléatoire du pion ordi.
