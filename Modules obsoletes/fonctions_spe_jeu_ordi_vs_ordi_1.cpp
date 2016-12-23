@@ -23,7 +23,7 @@ string demande_deplace_ordi_1(Tab2Dint t, int numnom)
  * Fonction qui déduit le bloc à cassé.
  * @param t le tableau de jeu.
  * @param numnom le numéro du pion du joueur (2 ou 3).
- * @return le tableau du jeu avec le bloc cassé.
+ * @return le tableau du jeu avec le bloc cassé. 
 **/
 Tab2Dint casse_bloc_ordi_1(Tab2Dint t, int numnom)
 {
