@@ -12,4 +12,4 @@ typedef vector<vector<int>> Tab2Dint;
 string demande_deplace_ordi(Tab2Dint t, int numnom);
 Tab2Dint casse_bloc_ordi(Tab2Dint t);
 
-#endif //FONCTIONS_SPE_JEU_ORDI_H_INCLUDED
+#endif //FONCTIONS_SPE_JEU_ORDI_H_INCLUDED 
