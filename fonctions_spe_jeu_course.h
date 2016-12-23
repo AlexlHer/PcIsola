@@ -8,4 +8,4 @@ typedef vector<vector<int>> Tab2Dint;
 
 bool gagner(Tab2Dint t, int numnom);
 
-#endif //FONCTIONS_SPE_JEU_COURSE_H_INCLUDED
+#endif //FONCTIONS_SPE_JEU_COURSE_H_INCLUDED 
