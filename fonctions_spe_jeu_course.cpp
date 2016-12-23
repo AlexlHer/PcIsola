@@ -33,7 +33,7 @@ bool gagner(Tab2Dint t, int numnom)
 		}
 	}
 
-	// Si le pion se situe sur la zone ennemi, retourne faux.
+	// Si le pion se situe sur la zone ennemi, retourne faux. 
 	if (numnom == 2 && x + 1 == t.size())
 	{
 		return false;
