@@ -1,409 +1,586 @@
+// --------------------------------
 // Auteur : Alexandre l'Heritier
-// Projet Isola v0.6
+// PcIsola v3.0
+// --------------------------------
 #include <iostream>
 #include <vector>
 #include <string>
+#include "fonctions_isola.h"
+#include "fonctions_spe_jeu_course.h"
+#include "fonctions_spe_jeu_ordi.h"
+#include "fonctions_spe_jeu_ordi_vs_ordi_1.h"
+#include "fonctions_spe_jeu_ordi_vs_ordi_2.h"
 
 using namespace std;
 
 // Mes raccourcis :
-typedef vector<int> Tab1Dint;
 typedef vector<vector<int>> Tab2Dint;
-typedef vector<char> Tab1Dchar;
-typedef vector<string> Tab1Dstring;
-
-char int_en_char(int c)
+/**
+ * Fonction qui permet d'effacer l'historique de la console selon l'OS.
+**/
+void effacer_console()
 {
-	Tab1Dchar t = { ' ',  'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };
-	return t[c+1];
+#ifdef _WIN32
+	system("cls");
+#elif __unix__
+	system("clear");
+#endif
+}
+/**
+ * Fonction qui permet de faire une pause dans la console selon l'OS.
+**/
+void pause_console()
+{
+#ifdef _WIN32
+	cout << endl;
+	system("pause.");
+#elif __unix__
+	cout << endl;
+	system("read a");
+#endif
 }
 
-int char_en_int(char c)
+/**
+ * Fonction secondaire qui permet de lancer le jeu classique.
+**/
+void jeu_classique()
 {
-	Tab1Dchar t = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
-	for (int i = 0; i < t.size(); i++)
+	// Initialisation des variables.
+	// nb_tour permet de compter les tours, taille_tab_x et taille_tab_y contiennent la taille du tableau choisi par l'utilisateur.
+	// nom1 est le nom du premier joueur, nom2 est le nom du deuxième joueur, deplace contient le déplacement choisi par l'utilisateur, gagnant contient le nom du gagnant.
+	int nb_tour = 0, taille_tab_x = 0, taille_tab_y = 0;
+	string nom1, nom2, deplace, gagnant;
+
+	// On demande les infos des joueurs.
+	cout << "Quelle est le nom du premier joueur : ";
+	getline(cin, nom1);
+	cout << endl << "Quelle est le nom du deuxième joueur : ";
+	getline(cin, nom2);
+	cout << endl << "Quelle est la taille du tableau x (Par défaut : 8) : ";
+	cin >> taille_tab_x;
+	cout << endl << "Quelle est la taille du tableau y (Par défaut : 6) : ";
+	cin >> taille_tab_y;
+
+	// On initialise le tableau.
+	Tab2Dint t = initialisation_tableau(taille_tab_x, taille_tab_y, "normal");
+	cout << endl;
+
+	// Tant que personne n'a gagné.
+	while (possibl_deplac(t, 2) && possibl_deplac(t, 3))
 	{
-		if (t[i] == c)
+		// On ajoute un tour.
+		nb_tour++;
+
+		// On rempli gagnant au cas où il gagne.
+		gagnant = nom1;
+
+		effacer_console();
+
+		// On affiche le tableau de jeu.
+		affichage(t);
+
+		cout << endl << "-------------------------------" << endl;
+		cout << "Isola Classique / Tour " << nb_tour << endl;
+
+		// On demande le déplacement au joueur.
+		deplace = demande_deplace(t, nom1, 2);
+
+		// On déplace le pion selon la demande du joueur.
+		t = deplacement(t, 2, deplace);
+
+		effacer_console();
+		affichage(t);
+
+		// On demande au joueur de casser un bloc et on le casse.
+		t = casse_bloc(t);
+
+
+		effacer_console();
+
+		// Au tour du deuxième joueur.
+		if (possibl_deplac(t, 2))
 		{
-			return i;
+			gagnant = nom2;
+			affichage(t);
+			cout << endl << "-------------------------------" << endl;
+			cout << "Isola Classique / Tour " << nb_tour << endl;
+			deplace = demande_deplace(t, nom2, 3);
+			t = deplacement(t, 3, deplace);
+			effacer_console();
+			affichage(t);
+			t = casse_bloc(t);
 		}
 	}
+
+	effacer_console();
+
+	// On affiche les scores et le vainqueur.
+	cout << "Le gagnant est " << gagnant << endl;
+	cout << "La partie s'est déroulée en " << nb_tour << " tours." << endl;
+	cout << "Tableau final :" << endl;
+	affichage(t);
+
+	pause_console();
 }
 
-Tab2Dint initialisation_tableau()
+/**
+ * Fonction secondaire qui permet de lancer le jeu course.
+**/
+void jeu_course()
 {
-	Tab2Dint t(6);
-	for (int i = 0; i < 6; i++) {
-		t[i] = Tab1Dint(8);
-		for (int j = 0; j < 8; j++) {
-			t[i][j] = 0;
+	// Initialisation des variables.
+	// nb_tour permet de compter les tours, taille_tab_x et taille_tab_y contiennent la taille du tableau choisi par l'utilisateur.
+	// nom1 est le nom du premier joueur, nom2 est le nom du deuxième joueur, deplace contient le déplacement choisi par l'utilisateur, gagnant contient le nom du gagnant.
+	int nb_tour = 0, taille_tab_x = 0, taille_tab_y = 0;
+	string nom1, nom2, deplace, gagnant;
+
+	// On demande les infos des joueurs.
+	cout << "Quelle est le nom du premier joueur : ";
+	getline(cin, nom1);
+	cout << endl << "Quelle est le nom du deuxième joueur : ";
+	getline(cin, nom2);
+	cout << endl << "Quelle est la taille du tableau x (Par défaut : 8) : ";
+	cin >> taille_tab_x;
+	cout << endl << "Quelle est la taille du tableau y (Par défaut : 6) : ";
+	cin >> taille_tab_y;
+
+	// On initialise le tableau.
+	Tab2Dint t = initialisation_tableau(taille_tab_x, taille_tab_y, "normal");
+	cout << endl;
+
+	// Tant que personne n'a gagné.
+	while (gagner(t, 2) && gagner(t, 3) && possibl_deplac(t, 2) && possibl_deplac(t, 3))
+	{
+		// On ajoute un tour.
+		nb_tour++;
+
+		// On rempli gagnant au cas où il gagne.
+		gagnant = nom1;
+
+		effacer_console();
+
+		// On affiche le tableau de jeu.
+		affichage(t);
+
+		cout << endl << "-------------------------------" << endl;
+		cout << "Isola Course / Tour " << nb_tour << endl;
+
+		// On demande le déplacement au joueur.
+		deplace = demande_deplace(t, nom1, 2);
+
+		// On déplace le pion selon la demande du joueur.
+		t = deplacement(t, 2, deplace);
+
+		effacer_console();
+		affichage(t);
+
+		// On demande au joueur de casser un bloc et on le casse.
+		t = casse_bloc(t);
+
+
+		effacer_console();
+
+		// Au tour du deuxième joueur.
+		if (possibl_deplac(t, 2))
+		{
+			gagnant = nom2;
+			affichage(t);
+			cout << endl << "-------------------------------" << endl;
+			cout << "Isola Course / Tour " << nb_tour << endl;
+			deplace = demande_deplace(t, nom2, 3);
+			t = deplacement(t, 3, deplace);
+			effacer_console();
+			affichage(t);
+			t = casse_bloc(t);
 		}
 	}
-	t[2][0] = 2;
-	t[2][7] = 3;
-	t = { {0, 0, 2, 0, 0, 0}, { 0, 0, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0, 0 }, { 0, 0, 0, 3, 0, 0 } };
-	return t;
+
+	effacer_console();
+
+	// On affiche les scores et le vainqueur.
+	cout << "Le gagnant est " << gagnant << endl;
+	cout << "La partie s'est déroulée en " << nb_tour << " tours." << endl;
+	cout << "Tableau final :" << endl;
+	affichage(t);
+
+	pause_console();
 }
 
-void affichage(Tab2Dint t)
+/**
+* Fonction secondaire qui permet de lancer le jeu ordi.
+**/
+void jeu_ordi()
 {
-	for (int i = 0; i < t.size(); i++)
+	// Initialisation des variables.
+	// nb_tour permet de compter les tours, taille_tab_x et taille_tab_y contiennent la taille du tableau choisi par l'utilisateur.
+	// nom1 est le nom du premier joueur, nom2 est le nom du deuxième joueur, deplace contient le déplacement choisi par l'utilisateur, gagnant contient le nom du gagnant.
+	int nb_tour = 0, taille_tab_x = 0, taille_tab_y = 0;
+	string nom1, nom2 = "Ordinateur", deplace, gagnant;
+
+	// On demande les infos des joueurs.
+	cout << "Quelle est votre nom : ";
+	getline(cin, nom1);
+	cout << endl << "Quelle est la taille du tableau x (Par défaut : 8) : ";
+	cin >> taille_tab_x;
+	cout << endl << "Quelle est la taille du tableau y (Par défaut : 6) : ";
+	cin >> taille_tab_y;
+
+	// On initialise le tableau.
+	Tab2Dint t = initialisation_tableau(taille_tab_x, taille_tab_y, "normal");
+	cout << endl;
+
+	// Tant que personne n'a gagné.
+	while (possibl_deplac(t, 2) && possibl_deplac(t, 3))
 	{
-		for (int j = 0; j < t[i].size(); j++)
+		// On ajoute un tour.
+		nb_tour++;
+
+		// On rempli gagnant au cas où il gagne.
+		gagnant = nom1;
+
+		effacer_console();
+
+		// On affiche le tableau de jeu.
+		affichage(t);
+
+		cout << endl << "-------------------------------" << endl;
+		cout << "Isola Ordi / Tour " << nb_tour << endl;
+
+		// On demande le déplacement au joueur.
+		deplace = demande_deplace(t, nom1, 2);
+
+		// On déplace le pion selon la demande du joueur.
+		t = deplacement(t, 2, deplace);
+
+		effacer_console();
+		affichage(t);
+
+		// On demande au joueur de casser un bloc et on le casse.
+		t = casse_bloc(t);
+
+
+		effacer_console();
+
+		// Au tour du deuxième joueur.
+		if (possibl_deplac(t, 2) && possibl_deplac(t, 3))
 		{
-			if (i == 0 || j == 0)
-			{
-				if (i == 0 && j == 0)
-				{
-					for (int k = 0; k < t[0].size() + 1; k++)
-					{
-						cout << " " << int_en_char(k - 1) << " ";
-					}
-					cout << endl;
-				}
-				if (j == 0 && i >= 0)
-				{
-					cout << " " << i + 1 << " ";
-				}
-			}
-			if (t[i][j] == 0)
-			{
-				cout << "[ ]";
-			}
-			if (t[i][j] == 1)
-			{
-				cout << "[X]";
-			}
-			if (t[i][j] == 2)
-			{
-				cout << "[1]";
-			}
-			if (t[i][j] == 3)
-			{
-				cout << "[2]";
-			}
+			gagnant = nom2;
+			affichage(t);
+			cout << endl << "-------------------------------" << endl;
+			cout << "Isola Ordi / Tour " << nb_tour << endl;
+			deplace = demande_deplace_ordi(t, 3);
+			t = deplacement(t, 3, deplace);
+			cout << "Déplacement choisi : " << deplace << endl;
+			pause_console();
+			effacer_console();
+			affichage(t);
+			cout << endl << "-------------------------------" << endl;
+			cout << "Bloc cassé par l'ordi : ";
+			t = casse_bloc_ordi(t);
+			cout << endl;
+			pause_console();
 		}
-		cout << endl;
 	}
+
+	effacer_console();
+
+	// On affiche les scores et le vainqueur.
+	cout << "Le gagnant est " << gagnant << endl;
+	cout << "La partie s'est déroulée en " << nb_tour << " tours." << endl;
+	cout << "Tableau final :" << endl;
+	affichage(t);
+
+	pause_console();
 }
 
-string demande_deplace(Tab2Dint t, string nom, int numnom)
+/**
+* Fonction secondaire qui permet de lancer le jeu survie.
+**/
+void jeu_survie()
 {
-	int x, y, z = 0; 
-	Tab1Dstring t1;
-	string choix_deplac;
-	for (int i = 0; i < t.size(); i++)
-	{
-		for (int j = 0; j < t[i].size(); j++)
-		{
-			if (t[i][j] == numnom)
-			{
-				x = i;
-				y = j;
-			}
-		}
-	}
-	if (x != 0)
-	{
-		if (t[x - 1][y] == 0)
-		{
-			t1.push_back("H");
-		}
-		if (y != 0)
-		{
-			if (t[x - 1][y - 1] == 0)
-			{
-				t1.push_back("HG");
-			}
-		}
-		if (y + 1 != t[x].size())
-		{
-			if (t[x - 1][y + 1] == 0)
-			{
-				t1.push_back("HD");
-			}
-		}
-	}
-	if (x + 1 != t.size())
-	{
-		if (t[x + 1][y] == 0)
-		{
-			t1.push_back("B");
-		}
-		if (y != 0)
-		{
-			if (t[x + 1][y - 1] == 0)
-			{
-				t1.push_back("BG");
-			}
-		}
-		if (y + 1 != t[x].size())
-		{
-			if (t[x + 1][y + 1] == 0)
-			{
-				t1.push_back("BD");
-			}
-		}
-	}
-	if (y != 0)
-	{
-		if (t[x][y - 1] == 0)
-		{
-			t1.push_back("G");
-		}
-	}
-	if (y+1 != t[x].size())
-	{
-		if (t[x][y + 1] == 0)
-		{
-			t1.push_back("D");
-		}
-	}
-	cout << "C'est au tour de " << nom << " (Jeton n�" << numnom-1 << ")" << endl;
-	cout << "Position actuelle du pion : " << x+1 << "x" << int_en_char(y) << endl;
-	cout << "Les d�placements disponibles sont : ";
-	for (int i = 0; i < t1.size(); i++)
-	{
-		cout << t1[i] << " ";
-	}
-	do
-	{
-		cout << endl << "Votre choix : ";
-		cin >> choix_deplac;
-		for (int i = 0; i < t1.size(); i++)
-		{
-			if (t1[i] == choix_deplac)
-			{
-				z = 1;
-			}
-		}
-	} while (z != 1);
-	return choix_deplac;
-}
+	// Initialisation des variables.
+	// nb_tour permet de compter les tours, taille_tab_x et taille_tab_y contiennent la taille du tableau choisi par l'utilisateur.
+	// nom1 est le nom du premier joueur, nom2 est le nom du deuxième joueur, deplace contient le déplacement choisi par l'utilisateur, gagnant contient le nom du gagnant.
+	int nb_tour = 0, taille_tab_x = 0, taille_tab_y = 0;
+	string nom1, nom2 = "o-d-m-s-u", deplace, gagnant;
 
-Tab2Dint deplacement(Tab2Dint t, int numnom, string ou)
-{
-	int x, y;
-	for (int i = 0; i < t.size(); i++)
-	{
-		for (int j = 0; j < t[i].size(); j++)
-		{
-			if (t[i][j] == numnom)
-			{
-				x = i;
-				y = j;
-			}
-		}
-	}
-	if (ou == "H")
-	{
-		t[x-1][y] = numnom;
-	}
-	if (ou == "B")
-	{
-		t[x+1][y] = numnom;
-	}
-	if (ou == "G")
-	{
-		t[x][y-1] = numnom;
-	}
-	if (ou == "D")
-	{
-		t[x][y+1] = numnom;
-	}
-	if (ou == "HG")
-	{
-		t[x-1][y-1] = numnom;
-	}
-	if (ou == "HD")
-	{
-		t[x-1][y+1] = numnom;
-	}
-	if (ou == "BG")
-	{
-		t[x+1][y-1] = numnom;
-	}
-	if (ou == "BD")
-	{
-		t[x+1][y+1] = numnom;
-	}
-	t[x][y] = 0;
-	return t;
-}
+	// On demande les infos des joueurs.
+	cout << "Quelle est votre nom : ";
+	getline(cin, nom1);
+	cout << endl << "Quelle est la taille du tableau x (Par défaut : 8) : ";
+	cin >> taille_tab_x;
+	cout << endl << "Quelle est la taille du tableau y (Par défaut : 6) : ";
+	cin >> taille_tab_y;
 
-Tab2Dint casse_bloc(Tab2Dint t)
-{
-	int a, arret = 0;
-	char b;
-	do
-	{
-		cout << "Dans quelle ligne se situe le bloc � casser : ";
-		cin >> a;
-		cout << endl << "Dans quelle colonne se situe le bloc � casser : ";
-		cin >> b;
-		a--;
-		if (a < t.size() && a >= 0)
-		{
-			if (char_en_int(b) < t[a].size() && char_en_int(b) >= 0)
-			{
-				if (t[a][char_en_int(b)] == 0)
-				{
-					arret = 1;
-				}
-			}
-		}
-	} while (arret != 1);
-	t[a][char_en_int(b)] = 1;
-	return t;
-}
+	// On initialise le tableau.
+	Tab2Dint t = initialisation_tableau(taille_tab_x, taille_tab_y, "survie");
+	cout << endl;
 
-bool possibl_deplac(Tab2Dint t, int numnom)
-{
-	int x, y;
-	for (int i = 0; i < t.size(); i++)
+	// Tant que personne n'a gagné.
+	while (possibl_deplac(t, 2))
 	{
-		for (int j = 0; j < t[i].size(); j++)
+		// On ajoute un tour.
+		nb_tour++;
+
+		// On rempli gagnant au cas où il gagne.
+		gagnant = nom1;
+
+		effacer_console();
+
+		// On affiche le tableau de jeu.
+		affichage(t);
+
+		cout << endl << "-------------------------------" << endl;
+		cout << "Isola Survie / Tour " << nb_tour << endl;
+
+		// On demande le déplacement au joueur.
+		deplace = demande_deplace(t, nom1, 2);
+
+		// On déplace le pion selon la demande du joueur.
+		t = deplacement(t, 2, deplace);
+
+		effacer_console();
+		affichage(t);
+
+		effacer_console();
+
+		// Au tour du deuxième joueur.
+		if (possibl_deplac(t, 2))
 		{
-			if (t[i][j] == numnom)
-			{
-				x = i;
-				y = j;
-			}
+			gagnant = nom2;
+			affichage(t);
+			cout << endl << "-------------------------------" << endl;
+			cout << "Isola Survie / Tour " << nb_tour << endl;
+			cout << endl << "-------------------------------" << endl;
+			cout << "Bloc cassé par l'ordi : ";
+			t = casse_bloc_ordi(t);
+			cout << endl;
+			pause_console();
 		}
 	}
-	if (x == 0)
+
+	effacer_console();
+
+	// On affiche les scores et le vainqueur.
+	if (gagnant == "o-d-m-s-u")
 	{
-		if (y == 0)
-		{
-			if (t[x + 1][y + 1] != 0 && t[x][y + 1] != 0 && t[x + 1][y] != 0)
-			{
-				return false;
-			}
-		}
-		else if (y + 1 == t[x].size())
-		{
-			if (t[x][y - 1] != 0 && t[x + 1][y] != 0 && t[x + 1][y - 1] != 0)
-			{
-				return false;
-			}
-		}
-		else
-		{
-			if (t[x][y - 1] != 0 && t[x + 1][y] != 0 && t[x + 1][y + 1] != 0 && t[x][y + 1] != 0 && t[x + 1][y - 1] != 0)
-			{
-				return false;
-			}
-		}
-	}
-	else if (x + 1 == t.size())
-	{
-		if (y == 0)
-		{
-			if (t[x - 1][y] != 0 && t[x - 1][y + 1] != 0 && t[x][y + 1] != 0)
-			{
-				return false;
-			}
-		}
-		else if (y + 1 == t[x].size())
-		{
-			if (t[x][y - 1] != 0 && t[x - 1][y] != 0 && t[x - 1][y - 1] != 0)
-			{
-				return false;
-			}
-		}
-		else
-		{
-			if (t[x][y - 1] != 0 && t[x - 1][y - 1] != 0 && t[x - 1][y] != 0 && t[x - 1][y + 1] != 0 && t[x][y + 1] != 0)
-			{
-				return false;
-			}
-		}
-	}
-	else if (y == 0 && (x != 0 || x + 1 != t.size()))
-	{
-		if (t[x - 1][y] != 0 && t[x - 1][y + 1] != 0 && t[x][y + 1] != 0 && t[x + 1][y + 1] != 0 && t[x + 1][y] != 0)
-		{
-			return false;
-		}
-	}
-	else if (y + 1 == t[x].size() && (x != 0 || x + 1 != t.size()))
-	{
-		if (t[x - 1][y] != 0 && t[x - 1][y - 1] != 0 && t[x][y - 1] != 0 && t[x + 1][y - 1] != 0 && t[x + 1][y] != 0)
-		{
-			return false;
-		}
+		cout << "Vous avez perdu." << endl;
 	}
 	else
 	{
-		if (t[x - 1][y - 1] != 0 && t[x][y - 1] != 0 && t[x + 1][y - 1] != 0 && t[x + 1][y] != 0 && t[x + 1][y + 1] != 0 && t[x][y + 1] != 0 && t[x - 1][y + 1] != 0 && t[x - 1][y] != 0)
-		{
-			return false;
-		}
+		cout << "Vous avez gagné !" << endl;
 	}
-	return true;
+	
+	cout << "La partie s'est déroulée en " << nb_tour << " tours." << endl;
+	cout << "Tableau final :" << endl;
+	affichage(t);
+
+	pause_console();
 }
 
-bool gagner(Tab2Dint t, int numnom)
+/**
+* Fonction secondaire qui permet de lancer le jeu ordi.
+**/
+void jeu_ordi_vs_ordi()
 {
-	int x, y;
-	for (int i = 0; i < t.size(); i++)
+	// Initialisation des variables.
+	// nb_tour permet de compter les tours, taille_tab_x et taille_tab_y contiennent la taille du tableau choisi par l'utilisateur.
+	// nom1 est le nom du premier joueur, nom2 est le nom du deuxième joueur, deplace contient le déplacement choisi par l'utilisateur, gagnant contient le nom du gagnant.
+	int nb_tour = 0, taille_tab_x = 0, taille_tab_y = 0;
+	string nom1 = "Ordinateur 1", nom2 = "Ordinateur 2", deplace, gagnant;
+
+	// On demande les infos des joueurs.
+	cout << endl << "Quelle est la taille du tableau x (Par défaut : 8) : ";
+	cin >> taille_tab_x;
+	cout << endl << "Quelle est la taille du tableau y (Par défaut : 6) : ";
+	cin >> taille_tab_y;
+
+	// On initialise le tableau.
+	Tab2Dint t = initialisation_tableau(taille_tab_x, taille_tab_y, "normal");
+	cout << endl;
+
+	// Tant que personne n'a gagné.
+	while (possibl_deplac(t, 2) && possibl_deplac(t, 3))
 	{
-		for (int j = 0; j < t[i].size(); j++)
+		// On ajoute un tour.
+		nb_tour++;
+
+		// On rempli gagnant au cas où il gagne.
+		gagnant = nom1;
+
+		effacer_console();
+
+		// On affiche le tableau de jeu.
+		affichage(t);
+
+		cout << endl << "-------------------------------" << endl;
+		cout << "Isola Ordi / Tour " << nb_tour << endl;
+
+		// On demande le déplacement au joueur.
+		deplace = demande_deplace_ordi_1(t, 2);
+
+		// On déplace le pion selon la demande du joueur.
+		t = deplacement(t, 2, deplace);
+		cout << "Déplacement choisi : " << deplace << endl;
+		pause_console();
+		effacer_console();
+		affichage(t);
+		cout << endl << "-------------------------------" << endl;
+		cout << "Bloc cassé par l'ordi : ";
+
+		// On demande au joueur de casser un bloc et on le casse.
+		t = casse_bloc_ordi_1(t, 2);
+		cout << endl;
+		pause_console();
+		effacer_console();
+
+		// Au tour du deuxième joueur.
+		if (possibl_deplac(t, 2) && possibl_deplac(t, 3))
 		{
-			if (t[i][j] == numnom)
-			{
-				x = i;
-				y = j;
-			}
+			gagnant = nom2;
+			affichage(t);
+			cout << endl << "-------------------------------" << endl;
+			cout << "Isola Ordi / Tour " << nb_tour << endl;
+			deplace = demande_deplace_ordi_2(t, 3);
+			t = deplacement(t, 3, deplace);
+			cout << "Déplacement choisi : " << deplace << endl;
+			pause_console();
+			effacer_console();
+			affichage(t);
+			cout << endl << "-------------------------------" << endl;
+			cout << "Bloc cassé par l'ordi : ";
+			t = casse_bloc_ordi_2(t, 3);
+			cout << endl;
+			pause_console();
 		}
 	}
-	if (numnom == 2 && x+1 == t.size())
-	{
-		return false;
-	}
-	if (numnom == 3 && x == 0)
-	{
-		return false;
-	}
-	return true;
+
+	effacer_console();
+
+	// On affiche les scores et le vainqueur.
+	cout << "Le gagnant est " << gagnant << endl;
+	cout << "La partie s'est déroulée en " << nb_tour << " tours." << endl;
+	cout << "Tableau final :" << endl;
+	affichage(t);
+
+	pause_console();
 }
 
+/**
+ * Fonction principale qui permet de lancer l'une des fonctions secondaires.
+**/
 int main()
 {
-	string nom1, nom2, deplace;
-	Tab2Dint t = initialisation_tableau();
-	affichage(t);
-	cout << "Quelle est le premier nom : ";
-	getline(cin, nom1);
-	cout << endl << "Quelle est le deuxi�me nom : ";
-	getline(cin, nom2);
-	cout << endl;
-	while (gagner(t, 2) && gagner(t, 3) && possibl_deplac(t, 2) && possibl_deplac(t, 3))
+	// Variable qui enregistre le choix de l'utilisateur sur le mode de jeu choisi.
+	string choix;
+	int boucle = 0;
+	cout << "-------------------------------------------------" << endl;
+	cout << "PcIsola v3.0" << endl;
+	cout << "Pour Info111" << endl;
+	cout << "-------------------------------------------------" << endl;
+	while (boucle == 0)
 	{
-		affichage(t);
-		deplace = demande_deplace(t, nom1, 2);
-		t = deplacement(t, 2, deplace);
-		t = casse_bloc(t);
+		cout << endl << "Choisir le type de jeu :" << endl;
+		cout << "(A) Isola classique." << endl;
+		cout << "(B) Isola course." << endl;
+		cout << "(C) Isola ordinateur." << endl;
+		cout << "(D) Isola survie." << endl;
+		cout << "(E) Isola IA vs IA." << endl;
+
+		cout << endl << "Votre choix : ";
+		getline(cin, choix);
+		cout << endl << "-------------------------------" << endl;
+
+		// Converti une chaine de caractère minucule en majuscule.
+		choix = verif_maj_min(choix);
+
+		if (choix == "A")
+		{
+			regle(choix);
+			pause_console();
+			effacer_console();
+			jeu_classique();
+			boucle = 1;
+		}
+		if (choix == "B")
+		{
+			regle(choix);
+			pause_console();
+			effacer_console();
+			jeu_course();
+			boucle = 1;
+		}
+		if (choix == "C")
+		{
+			regle(choix);
+			pause_console();
+			effacer_console();
+			jeu_ordi();
+			boucle = 1;
+		}
+		if (choix == "D")
+		{
+			regle(choix);
+			pause_console();
+			effacer_console();
+			jeu_survie();
+			boucle = 1;
+		}
+		if (choix == "E")
+		{
+			regle(choix);
+			pause_console();
+			effacer_console();
+			jeu_ordi_vs_ordi();
+			boucle = 1;
+		}
 	}
 	return 0;
 }
+
 /**
 Changelog :
-v1.0 :
-Fonction main() refaite compl�tement pour correspondre aux r�gles de l'isola.
+
+A faire :
+-Mode avec vies avec respawn ou on veut dans le plateau.
+-Couleur des pions.
+
+v3.0 :
+Programme découpé en modules.
+Affichage du tableau finale lorsque qq'un a perdu.
+Affichage de la grille corrigé.
+Boucle dans main.
+Troix modes ajouté :
+ -Mode ordi vs joueur.
+ -Mode survie.
+ -Mode IA vs IA.
+
+v2.1 :
+Ajout des corrections automatique des minuscules entrés par l'utilisateur.
+
+v2.0 :
+Fonction main() transformé en menu de séléction pour differents mode de jeu.
+Deux modes de jeux :
+-Jeu classique.
+-Jeu course.
+Ajout des régles de jeu.
+Ajout des commentaires.
+
+v1.0 (Projet Isola devient PcIsola :-) ) :
+Fonction main() refaite complètement pour correspondre aux règles de l'isola.
 
 v0.6 :
 Remplacement des cin par des getline() dans main().
-Fonction casse_bloc() corrig� : 
--Premi�re ligne = 1 et non 0.
--Condition pour valider l'entrer de l'utilisateur renforc�.
-Fonction demande_deplace() corrig� :
--Affichage de la position du pion corrig�.
--Affichage des d�placements possible am�lior�.
-Fonction affichage() am�lior� (indication des lignes et des colonnes).
+Fonction casse_bloc() corrigé :
+-Première ligne = 1 et non 0.
+-Condition pour valider l'entrer de l'utilisateur renforcé.
+Fonction demande_deplace() corrigé :
+-Affichage de la position du pion corrigé.
+-Affichage des déplacements possible amélioré.
+Fonction affichage() amélioré (indication des lignes et des colonnes).
 
 v0.5 :
-Fonction possibl_deplac() r�ecrite compl�tement.
+Fonction possibl_deplac() réecrite complètement.
 
 v0.4.1 :
 Correction de la fonction gagner().
@@ -414,9 +591,9 @@ Fonction gagner() ne fonctionne pas.
 Fonction possibl_deplac() ne fonctionne pas.
 
 v0.3.20 :
-Fonction affichage() r�duite � sa fonction de base : afficher un tableau.
+Fonction affichage() réduite à sa fonction de base : afficher un tableau.
 
-v0.3.12 : 
+v0.3.12 :
 Correction de bugs dans la fonction demande_deplace().
 
 v0.3.11 :
@@ -431,20 +608,20 @@ Fonction affichage() ne fonctionne pas (n'affiche rien).
 
 v0.3 :
 Remplissage des fonctions du scelettes :
--Fonction deplacement d�coup� en deux fonctions : demande_deplace() et deplacement().
--Cr�ation des fonctions char_en_int() et int_en_char().
-Cr�ation d'une fonction main() provisoire permettant de tester le programme.
-pos_dep() renomm� en possibl_deplac()
+-Fonction deplacement découpé en deux fonctions : demande_deplace() et deplacement().
+-Création des fonctions char_en_int() et int_en_char().
+Création d'une fonction main() provisoire permettant de tester le programme.
+pos_dep() renommé en possibl_deplac()
 
 v0.2 :
-Cr�ation du scelette provisoire du programme :
--Fonction deplacement() pour d�placer les pions.
+Création du scelette provisoire du programme :
+-Fonction deplacement() pour déplacer les pions.
 -Fonction casse_bloc() pour casser un bloc.
 -Fonction de test gagner() et pos_dep().
 
 v0.1 :
 Initialisation du projet Isola.
-Cr�ation de la fonction initialisation_tableau().
-Cr�ation de la fonction affichage().
+Création de la fonction initialisation_tableau().
+Création de la fonction affichage().
 
 **/
