@@ -1,16 +1,16 @@
 // --------------------------------
 // Auteur : Alexandre l'Heritier
-// PcIsola v4.1 : Module fonctions communes pour les modes de jeu.
+// PcIsola v5.0 : Module fonctions communes pour les modes de jeu.
 // Module pour : PcIsola v3.0 et supérieurs
 // --------------------------------
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include <string>
-#include "fonctions_isola.h"
 #include <time.h>
+#include "fonctions_isola.h"
 
-string version_pcisola = "4.1";
+string version_pcisola = "5.0";
 
 /**
 * Fonction qui permet d'effacer l'historique de la console selon l'OS.
@@ -24,7 +24,7 @@ void effacer_console()
 #endif
 }
 /**
-* Fonction qui permet de faire une pause dans la console selon l'OS. 
+* Fonction qui permet de faire une pause dans la console selon l'OS.
 **/
 void pause_console()
 {
@@ -42,6 +42,9 @@ void pause_console()
 * @param t le tableau dans lequel faut rechercher.
 * @param cherche la chaine de caractère à rechecher..
 * @return true si la liste possède la chaine de caractère, false sinon.
+*
+* Degré de confiance : 100%
+* Complexité : n (la taille du tableau)
 **/
 bool In(Tab1Dstring t, string cherche)
 {
@@ -58,21 +61,66 @@ bool In(Tab1Dstring t, string cherche)
 }
 
 /**
+* Fonction qui donne la position d'un pion.
+* @param t le tableau dans lequel faut rechercher.
+* @param numnom le numéro du pion à rechercher.
+* @return un tableau avec la position du pion numnom.
+*
+* Degré de confiance : 100%
+* Complexité : n² (la taille du tableau)
+**/
+Tab1Dint position_pion(Tab2Dint t, int numnom)
+{
+	// Initialisation des variables.
+	// x et y la position du pion.
+	int x, y;
+
+	// Double boucle qui parcours le tableau 2D.
+	for (int i = 0; i < t.size(); i++)
+	{
+		for (int j = 0; j < t[i].size(); j++)
+		{
+			// Une fois le pion trouvé, mettre sa position dans x et y.
+			if (t[i][j] == numnom)
+			{
+				x = i;
+				y = j;
+			}
+		}
+	}
+	return{ x, y };
+}
+
+/**
 * Fonction qui affiche les déplacements possible de manière carré.
 * @param t le tableau à afficher.
+*
+* Degré de confiance : 95% (Afichage qui peut etre perturbé quand il y a une case qui manque)
+* Complexité : n (la taille du tableau t)
 **/
-void affichage_deplacement_possible(Tab1Dstring t)
+void affichage_deplacement_possible(Tab1Dstring t, int numnom)
 {
 	// Tableau contenant l'ordre d'affichage des déplacements.
 	Tab1Dstring t1 = { "HG", "H", "HD", "G", " ", "D", "BG", "B", "BD" };
-
+	cout << endl;
 	// Boucle qui va afficher les 9 élements.
 	for (int i = 0; i < 9; i++)
 	{
-		// Si le tableau t contient t1[i] alors il est affiché, sinon si on est au milieu du carré, afficher 2 espaces, sinon afficher 1 espace.
-		if (In(t, t1[i])) cout << t1[i];
-		else if (i == 4) cout << "  ";
-		else cout << " ";
+		// Si le tableau t contient t1[i] alors il est affiché, sinon si on est au milieu du carré, afficher le pion, sinon afficher 4 espace.
+		if (In(t, t1[i])) 
+		{
+			if(t1[i] == "G")
+				cout << "[" << t1[i] << " ]";
+
+			else if (t1[i] == "D") 
+				cout << "[ " << t1[i] << "]";
+
+			else
+				cout << "[" << t1[i] << "]";
+		}
+		else if (i == 4) cout << "[" << numnom-1 << "]";
+		else if (i == 1 || i == 7) cout << "   ";
+		else cout << "    ";
 
 		// 1 espace pour séparer les déplacements affichés.
 		cout << " ";
@@ -80,20 +128,24 @@ void affichage_deplacement_possible(Tab1Dstring t)
 		// On met un saut de ligne quand on arrive au bout du carré.
 		if (i == 2 || i == 5) cout << endl;
 	}
+	cout << endl;
 }
 
 /**
 * Fonction qui affiche les règles du jeu.
 * @param a un string qui permet de déterminer quel mode a été choisi.
+*
+* Degré de confiance : 100%
+* Complexité : 10
 **/
 void regle(string a)
 {
 	// Règles à afficher si le jeu classique est choisi.
-	if (a == "A" || a == "C" || a == "E" || a == "F")
+	if (a == "A" || a == "B" || a == "C" || a == "D" || a == "E" || a == "F" || a == "G" || a == "H")
 	{
-		cout << "Régle de l'isola classique" << endl;
+		cout << "Régle de l'isola" << endl;
 		cout << "-------------------------------" << endl;
-		if (a == "E" || a == "F")
+		if (a == "B" || a == "D" || a == "F" || a == "H")
 		{
 			cout << "Chaque joueur possède un pion. Au début du jeu, les deux pions sont" << endl;
 			cout << "placés par les joueurs." << endl;
@@ -104,7 +156,14 @@ void regle(string a)
 			cout << "situés au milieu de deux côtés opposés." << endl;
 		}
 		cout << "A chaque tour, chaque joueur :" << endl;
-		cout << "- déplace son pion vers une case libre adjacente ou touchant la case" << endl;
+		if (a == "E" || a == "F" || a == "G" || a == "H")
+		{
+			cout << "- déplace son pion à la façon d'un cavalier au jeu d'echec" << endl;
+		}
+		else 
+		{
+			cout << "- déplace son pion vers une case libre adjacente ou touchant la case" << endl;
+		}
 		cout << "  de départ par un coin(comme un roi aux échecs) et" << endl;
 		cout << "- détruit ensuite une case du jeu non occupée pour le reste de la partie" << endl;
 		cout << "  (dans la version commercialisée, on appuyait avec le doigt sur la case" << endl;
@@ -116,7 +175,7 @@ void regle(string a)
 	}
 
 	// Règles à afficher si le jeu course est choisi.
-	if (a == "B")
+	if (a == "K")
 	{
 		cout << "Régle de l'isola course" << endl;
 		cout << "-------------------------------" << endl;
@@ -133,7 +192,7 @@ void regle(string a)
 		cout << "plus aucune case libre ni par un côté ni par un coin - perd la partie." << endl;
 		cout << "Source : Wikipédia" << endl;
 	}
-	if (a == "D")
+	if (a == "I" || a == "J")
 	{
 		cout << "Régle de l'isola survie" << endl;
 		cout << "-------------------------------" << endl;
@@ -146,6 +205,9 @@ void regle(string a)
 * Fonction qui permet de convertir une chaine de caractère minuscule en CC majuscule.
 * @param a une chaine de caractère minuscule et/ou majuscule.
 * @return une chaine de caractère majuscule.
+*
+* Degré de confiance : 100%
+* Complexité : 52
 **/
 string verif_maj_min(string a)
 {
@@ -171,6 +233,9 @@ string verif_maj_min(string a)
 * Fonction qui converti un entier en caractère.
 * @param c un entier.
 * @return un caractère.
+*
+* Degré de confiance : 99% (si le tableau de jeu est plus grand que 26, il n'y a que des Z qui s'affiche (pour eviter que ça plante)).
+* Complexité : 27
 **/
 char int_en_char(int c)
 {
@@ -189,6 +254,9 @@ char int_en_char(int c)
 * Fonction qui converti un caractère en entier.
 * @param c un caractère.
 * @return un entier.
+*
+* Degré de confiance : 100%
+* Complexité : 52
 **/
 int char_en_int(char c)
 {
@@ -209,6 +277,9 @@ int char_en_int(char c)
 /**
 * Fonction qui affiche un tableau.
 * @param t le tableau à afficher.
+*
+* Degré de confiance : 100%
+* Complexité : n² (la taille du tableau t)
 **/
 void affichage(Tab2Dint t)
 {
@@ -278,6 +349,9 @@ void affichage(Tab2Dint t)
 * @param x le nombre de ligne.
 * @param y le nombre de colonne.
 * @return le tableau de taille "x" x "y".
+*
+* Degré de confiance : 100%
+* Complexité : n² (la taille du tableau créer (donc x*y)).
 **/
 Tab2Dint initialisation_tableau(int x, int y, string choix)
 {
@@ -319,8 +393,10 @@ Tab2Dint initialisation_tableau(int x, int y, string choix)
 			cout << "Où mettre le pion du premier joueur ?" << endl;
 			cout << "Ligne : ";
 			cin >> a;
+			cin.clear();
 			cout << endl << "Colonne : ";
 			cin >> b;
+			cin.clear();
 			// On fait -1 car un tableau commence par 0 et pas par 1.
 			a--;
 
@@ -348,10 +424,12 @@ Tab2Dint initialisation_tableau(int x, int y, string choix)
 			cout << "Où mettre le pion du deuxième joueur ?" << endl;
 			cout << "Ligne : ";
 			cin >> a;
+			cin.clear();
 			cout << endl << "Colonne : ";
 			cin >> b;
+			cin.clear();
 			// On fait -1 car un tableau commence par 0 et pas par 1.
-			x--;
+			a--;
 
 			// Tests pour déterminer si la case est disponible.
 			if (a < t.size() && a >= 0)
@@ -381,8 +459,10 @@ Tab2Dint initialisation_tableau(int x, int y, string choix)
 			cout << "Où mettre votre pion ?" << endl;
 			cout << "Ligne : ";
 			cin >> a;
+			cin.clear();
 			cout << endl << "Colonne : ";
 			cin >> b;
+			cin.clear();
 			// On fait -1 car un tableau commence par 0 et pas par 1.
 			a--;
 
@@ -426,41 +506,66 @@ Tab2Dint initialisation_tableau(int x, int y, string choix)
 		// On place le pion.
 		t[a][bc] = 3;
 	}
+
+	if (choix == "placement_choisi_par_joueur_survie")
+	{
+		int a = 0, arret = 0, bc = 0;
+		char b;
+		effacer_console();
+		do
+		{
+			// On affiche la grille de jeu.
+			affichage(t);
+			cout << "Où mettre votre pion ?" << endl;
+			cout << "Ligne : ";
+			cin >> a;
+			cin.clear();
+			cout << endl << "Colonne : ";
+			cin >> b;
+			cin.clear();
+			// On fait -1 car un tableau commence par 0 et pas par 1.
+			a--;
+
+			// Tests pour déterminer si la case est disponible.
+			if (a < t.size() && a >= 0)
+			{
+				if (char_en_int(b) < t[a].size() && char_en_int(b) >= 0)
+				{
+					if (t[a][char_en_int(b)] == 0)
+					{
+						arret = 1;
+					}
+				}
+			}
+		} while (arret != 1);
+		// On place le pion.
+		t[a][char_en_int(b)] = 2;
+
+	}
 	//t = { {0,0,0,0,2,0,0,0,0},{ 0,0,0,0,0,0,0,0,0 },{ 0,0,0,0,0,0,0,0,0 },{ 0,0,0,0,0,0,0,0,0 },{ 0,0,0,0,0,0,0,0,0 },{ 0,0,0,0,0,0,1,1,1 },{ 0,0,0,0,0,0,1,1,1 },{ 0,0,0,0,0,0,1,1,0 },{ 0,0,0,0,0,0,1,1,3 } };
 	// Retourne le tableau 2D complété.
 	return t;
 }
 
 /**
-* Fonction qui affiche les déplacement possible et plusieurs autres informations.
-* @param t le tableau contenant le pion à déplacer.
-* @param nom le nom du joueur.
-* @param numnom le numéro du pion.
-* @return le déplacement à effectuer.
+* Fonction qui détermine les déplacements possible d'un pion.
+* @param t le tableau de jeu.
+* @param x la ligne du pion. (Ou numnom si y = 99 (pour l'IA)).
+* @param y la colonne du pion. (Ou l'indicateur d'IA).
+* @return le tableau de de déplacement possible.
+*
+* Degré de confiance : 100%
+* Complexité : 19
 **/
-string demande_deplace(Tab2Dint t, string nom, int numnom)
+Tab1Dstring deplacement_possible(Tab2Dint t, int x, int y)
 {
-	// Initialisation des variables.
-	// x et y la position du pion, z la condition pour que la boucle de verification s'arrete (tout en bas de la fonction).
-	// t1 le tableau contenant les déplacements possibles.
-	// choix_deplac la cdc contenant le déplacement à renvoyer.
-	int x, y, z = 0;
-	Tab1Dstring t1;
-	string choix_deplac;
-
-	// Double boucle qui parcours le tableau 2D.
-	for (int i = 0; i < t.size(); i++)
+	// Permet d'adapter la fonction pour l'IA (La fonction spécifique à l'IA est remplacé par cette fonction générale).
+	if (y == -1)
 	{
-		for (int j = 0; j < t[i].size(); j++)
-		{
-			// Une fois le pion trouvé, mettre sa position dans x et y.
-			if (t[i][j] == numnom)
-			{
-				x = i;
-				y = j;
-			}
-		}
+		Tab1Dint t2 = position_pion(t, x);
+		x = t2[0], y = t2[1];
 	}
+	Tab1Dstring t1;
 	// Grande serie de test pour trouver les déplacements possibles.
 	// Si x != 0 donc si le pion n'est pas sur la première ligne du tableau 2D.
 	if (x != 0)
@@ -534,6 +639,34 @@ string demande_deplace(Tab2Dint t, string nom, int numnom)
 			t1.push_back("D");
 		}
 	}
+	return t1;
+}
+
+/**
+* Fonction qui affiche les déplacement possible et plusieurs autres informations.
+* @param t le tableau contenant le pion à déplacer.
+* @param nom le nom du joueur.
+* @param numnom le numéro du pion.
+* @return le déplacement à effectuer.
+*
+* Degré de confiance : 100%
+* Complexité : n
+**/
+string demande_deplace(Tab2Dint t, string nom, int numnom)
+{
+	// Initialisation des variables.
+	// x et y la position du pion, z la condition pour que la boucle de verification s'arrete (tout en bas de la fonction).
+	// t1 le tableau contenant les déplacements possibles.
+	// choix_deplac la cdc contenant le déplacement à renvoyer.
+	int z = 0;
+	Tab1Dstring t1;
+	string choix_deplac;
+
+	// On recupère la position du pion numnom et on l'a met dans x et y.
+	Tab1Dint t2 = position_pion(t, numnom);
+	int x = t2[0], y = t2[1];
+
+	t1 = deplacement_possible(t, x, y);
 
 	// Inscription d'infos.
 	cout << "-------------------------------" << endl;
@@ -548,9 +681,10 @@ string demande_deplace(Tab2Dint t, string nom, int numnom)
 	//	cout << t1[i] << " ";
 	//}
 	cout << endl;
-	affichage_deplacement_possible(t1);
+	affichage_deplacement_possible(t1, numnom);
 	cout << endl << "-------------------------------" << endl;
 	cout << "Entrer (S) pour sauver la partie." << endl;
+	cout << "Entrer (Q) pour quitter PcIsola." << endl;
 
 	// Boucle de verification.
 	do
@@ -561,13 +695,11 @@ string demande_deplace(Tab2Dint t, string nom, int numnom)
 		// Converti une chaine de caractère minucule en majuscule.
 		choix_deplac = verif_maj_min(choix_deplac);
 		if (choix_deplac == "S") return "S";
+		if (choix_deplac == "Q") return "Q";
 
-		for (int i = 0; i < t1.size(); i++)
+		if (In(t1, choix_deplac))
 		{
-			if (t1[i] == choix_deplac)
-			{
-				z = 1;
-			}
+			z = 1;
 		}
 	} while (z != 1);
 
@@ -580,26 +712,15 @@ string demande_deplace(Tab2Dint t, string nom, int numnom)
 * @param numnom le numéro du pion.
 * @param ou le déplacement à effectuer.
 * @return le tableau avec le pion déplacé.
+*
+* Degré de confiance : 100%
+* Complexité : n²
 **/
 Tab2Dint deplacement(Tab2Dint t, int numnom, string ou)
 {
-	// Initialisation des variables.
-	// x et y la position du pion.
-	int x, y;
-
-	// Double boucle qui parcours le tableau 2D.
-	for (int i = 0; i < t.size(); i++)
-	{
-		for (int j = 0; j < t[i].size(); j++)
-		{
-			// Une fois le pion trouvé, mettre sa position dans x et y.
-			if (t[i][j] == numnom)
-			{
-				x = i;
-				y = j;
-			}
-		}
-	}
+	// On recupère la position du pion numnom et on l'a met dans x et y.
+	Tab1Dint t1 = position_pion(t, numnom);
+	int x = t1[0], y = t1[1];
 
 	// Effectue le déplacement selon la variable ou.
 	if (ou == "H")
@@ -645,6 +766,9 @@ Tab2Dint deplacement(Tab2Dint t, int numnom, string ou)
 * Fonction qui demande quel bloc casser et le casse.
 * @param t le tableau.
 * @return le tableau avec le bloc cassé.
+*
+* Degré de confiance : 100%
+* Complexité : 9
 **/
 Tab2Dint casse_bloc(Tab2Dint t)
 {
@@ -661,8 +785,10 @@ Tab2Dint casse_bloc(Tab2Dint t)
 		cout << endl << "-------------------------------" << endl;
 		cout << "Dans quelle ligne se situe le bloc à casser : ";
 		cin >> a;
+		cin.clear();
 		cout << endl << "Dans quelle colonne se situe le bloc à casser : ";
 		cin >> b;
+		cin.clear();
 		//b = verif_maj_min(b);
 
 		// On fait -1 car un tableau commence par 0 et pas par 1.
@@ -692,124 +818,22 @@ Tab2Dint casse_bloc(Tab2Dint t)
 * @param t le tableau à verifier.
 * @param numnom le numéro du pion.
 * @return faux si le pion est bloqué, vrai sinon.
+*
+* Degré de confiance : 100%
+* Complexité : n²
 **/
 bool possibl_deplac(Tab2Dint t, int numnom)
 {
-	// Initialisation des variables.
-	// x et y la position du pion.
-	int x, y;
+	Tab1Dstring t1;
+	// On recupère la position du pion numnom et on l'a met dans x et y.
+	Tab1Dint t2 = position_pion(t, numnom);
+	int x = t2[0], y = t2[1];
 
-	// Double boucle qui parcours le tableau 2D.
-	for (int i = 0; i < t.size(); i++)
+	t1 = deplacement_possible(t, x, y);
+
+	if (t1.size() == 0)
 	{
-		for (int j = 0; j < t[i].size(); j++)
-		{
-			// Une fois le pion trouvé, mettre sa position dans x et y.
-			if (t[i][j] == numnom)
-			{
-				x = i;
-				y = j;
-			}
-		}
-	}
-
-	// Très (très) grande série de test pour trouver si il y a encore des déplacements possibles. (Bonne chance !)
-	// Si le pion est sur la première ligne.
-	if (x == 0)
-	{
-		// Si le pion est sur la première colonne. (donc dans l'angle haut gauche)
-		if (y == 0)
-		{
-			// On verifie si les 3 cases autour sont cassé, si oui retourne faux.
-			if (t[x + 1][y + 1] != 0 && t[x][y + 1] != 0 && t[x + 1][y] != 0)
-			{
-				return false;
-			}
-		}
-
-		// Si le pion est sur la dernière colonne. (donc dans l'angle haut droite)
-		else if (y + 1 == t[x].size())
-		{
-			// On verifie si les 3 cases autour sont cassé, si oui retourne faux.
-			if (t[x][y - 1] != 0 && t[x + 1][y] != 0 && t[x + 1][y - 1] != 0)
-			{
-				return false;
-			}
-		}
-
-		// Si le pion est sur la première ligne mais pas dans un angle.
-		else
-		{
-			// On verifie si les 5 cases autour sont cassé, si oui retourne faux.
-			if (t[x][y - 1] != 0 && t[x + 1][y] != 0 && t[x + 1][y + 1] != 0 && t[x][y + 1] != 0 && t[x + 1][y - 1] != 0)
-			{
-				return false;
-			}
-		}
-	}
-
-	// Si le pion est sur la dernière ligne.
-	else if (x + 1 == t.size())
-	{
-		// Si le pion est sur la première colonne. (donc dans l'angle bas gauche)
-		if (y == 0)
-		{
-			// On verifie si les 3 cases autour sont cassé, si oui retourne faux.
-			if (t[x - 1][y] != 0 && t[x - 1][y + 1] != 0 && t[x][y + 1] != 0)
-			{
-				return false;
-			}
-		}
-
-		// Si le pion est sur la dernière colonne. (donc dans l'angle bas droite)
-		else if (y + 1 == t[x].size())
-		{
-			// On verifie si les 3 cases autour sont cassé, si oui retourne faux.
-			if (t[x][y - 1] != 0 && t[x - 1][y] != 0 && t[x - 1][y - 1] != 0)
-			{
-				return false;
-			}
-		}
-
-		// Si le pion est sur la dernière ligne mais pas dans un angle.
-		else
-		{
-			// On verifie si les 5 cases autour sont cassé, si oui retourne faux.
-			if (t[x][y - 1] != 0 && t[x - 1][y - 1] != 0 && t[x - 1][y] != 0 && t[x - 1][y + 1] != 0 && t[x][y + 1] != 0)
-			{
-				return false;
-			}
-		}
-	}
-
-	// Si le pion est sur la première colonne mais pas dans un angle.
-	else if (y == 0 && (x != 0 || x + 1 != t.size()))
-	{
-		// On verifie si les 5 cases autour sont cassé, si oui retourne faux.
-		if (t[x - 1][y] != 0 && t[x - 1][y + 1] != 0 && t[x][y + 1] != 0 && t[x + 1][y + 1] != 0 && t[x + 1][y] != 0)
-		{
-			return false;
-		}
-	}
-
-	// Si le pion est sur la dernière colonne mais pas dans un angle.
-	else if (y + 1 == t[x].size() && (x != 0 || x + 1 != t.size()))
-	{
-		// On verifie si les 5 cases autour sont cassé, si oui retourne faux.
-		if (t[x - 1][y] != 0 && t[x - 1][y - 1] != 0 && t[x][y - 1] != 0 && t[x + 1][y - 1] != 0 && t[x + 1][y] != 0)
-		{
-			return false;
-		}
-	}
-
-	// Si le pion n'est pas sur les bors du tableau.
-	else
-	{
-		// On verifie si les 8 cases autour sont cassé, si oui retourne faux.
-		if (t[x - 1][y - 1] != 0 && t[x][y - 1] != 0 && t[x + 1][y - 1] != 0 && t[x + 1][y] != 0 && t[x + 1][y + 1] != 0 && t[x][y + 1] != 0 && t[x - 1][y + 1] != 0 && t[x - 1][y] != 0)
-		{
-			return false;
-		}
+		return false;
 	}
 	// Si le pion peut se déplacer, on returne vrai.
 	return true;
@@ -824,6 +848,9 @@ bool possibl_deplac(Tab2Dint t, int numnom)
 * @param nom1 le nom du joueur 1.
 * @param nom2 le nom du joueur 2.
 * @param gagnant le joueur jouant et sauvegardant.
+*
+* Degré de confiance : 100%
+* Complexité : n²
 **/
 void sauvegarde(string type_de_save, string type_de_jeu, Tab2Dint tab_de_jeu, int nb_tour, string nom1, string nom2, string gagnant)
 {
