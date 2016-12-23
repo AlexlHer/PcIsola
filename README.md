@@ -17,9 +17,7 @@ Ajout du mode cavalier :
 
 -Main adaptée.
 
-Optimisation : Création de fonctions "deplacement_possible", localement pour les modules "fonctions_isola" et 
-
-"fonctions_spe_jeu_cavalier", sur le modèle du module "fonctions_spe_jeu_ordi".
+Optimisation : Création de fonctions "deplacement_possible", localement pour les modules "fonctions_isola" et "fonctions_spe_jeu_cavalier", sur le modèle du module "fonctions_spe_jeu_ordi".
 
 Correction d'un bug critique de casse_bloc() (boucle qui tourne en boucle).
 
@@ -29,9 +27,7 @@ Affichage des déplacements refait.
 
 Affichage des differents modes de jeu rangé (Régles ajoutées).
 
-Fonction deplacement_possible de l'IA retiré et remplacé par deplacement_possible générale situé dans fonctions_isola.cpp (donc
-
-adaptation des fonctions de l'IA et de deplacement_possible).
+Fonction deplacement_possible de l'IA retiré et remplacé par deplacement_possible générale situé dans fonctions_isola.cpp (donc adaptation des fonctions de l'IA et de deplacement_possible).
 
 Protection ajouté pour éviter le dépassement de 26 cases dans une ligne, dans toutes les fonctions secondaire.
 
@@ -42,9 +38,7 @@ Ajout d'une IA pour le mode Cavalier. Basée en grande partie sur l'IA du mode C
 
 ### v4.1 :
 
-Un peu d'optimisation (-100 lignes : Mode normal inclut dans mode classique car les deux sont semblablent, 
-
-création de la fonction position_pion utilisée par plusieurs fonctions.).
+Un peu d'optimisation (-100 lignes : Mode normal inclut dans mode classique car les deux sont semblablent, création de la fonction position_pion utilisée par plusieurs fonctions.).
 
 Bugs de sauvegarde résolu.
 
@@ -55,9 +49,7 @@ Option pour quitter en effacent le fichier temporaire.
 
 ### v4.0 :
 
-Fonction affichage_deplacement_possible crée pour afficher les déplacements de manière "carré" (au lieu de tous les déplacements sur la
-
-même ligne).
+Fonction affichage_deplacement_possible crée pour afficher les déplacements de manière "carré" (au lieu de tous les déplacements sur la même ligne).
 
 Mode de jeu normal ajouté (consignes).
 
