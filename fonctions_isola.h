@@ -25,4 +25,4 @@ bool In(Tab1Dstring t, string cherche);
 void affichage_deplacement_possible(Tab1Dstring t);
 void sauvegarde(string type_de_save, string type_de_jeu, Tab2Dint tab_de_jeu, int nb_tour, string nom1, string nom2, string gagnant);
 
-#endif //FONCTIONS_ISOLA_H_INCLUDED
+#endif //FONCTIONS_ISOLA_H_INCLUDED 
