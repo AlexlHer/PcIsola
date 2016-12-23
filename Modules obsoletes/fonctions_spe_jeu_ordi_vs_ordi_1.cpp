@@ -1,6 +1,6 @@
 // --------------------------------
 // Auteur : Alexandre l'Heritier
-// PcIsola v3.0 : Module fonction spécifique au mode ordi vs ordi (ordinateur 1).
+// PcIsola v3.0 : Module fonction spÃ©cifique au mode ordi vs ordi (ordinateur 1).
 // --------------------------------
 #include <iostream>
 #include <vector>
@@ -9,9 +9,9 @@
 #include "fonctions_isola.h"
 
 /**
- * Fonction qui déduit le déplacement.
+ * Fonction qui dÃ©duit le dÃ©placement.
  * @param t le tableau de jeu.
- * @param numnom le numéro du pion du joueur (2 ou 3).
+ * @param numnom le numÃ©ro du pion du joueur (2 ou 3).
  * @return une chaine : "H", "B", "G", "D", "HD", "HG", "BD", "BG".
 **/
 string demande_deplace_ordi_1(Tab2Dint t, int numnom)
@@ -20,10 +20,10 @@ string demande_deplace_ordi_1(Tab2Dint t, int numnom)
 }
 
 /**
- * Fonction qui déduit le bloc à cassé.
+ * Fonction qui dÃ©duit le bloc Ã  cassÃ©.
  * @param t le tableau de jeu.
- * @param numnom le numéro du pion du joueur (2 ou 3).
- * @return le tableau du jeu avec le bloc cassé.
+ * @param numnom le numÃ©ro du pion du joueur (2 ou 3).
+ * @return le tableau du jeu avec le bloc cassÃ©.
 **/
 Tab2Dint casse_bloc_ordi_1(Tab2Dint t, int numnom)
 {
