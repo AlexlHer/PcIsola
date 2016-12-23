@@ -1,6 +1,7 @@
 // --------------------------------
 // Auteur : Alexandre l'Heritier
-// PcIsola v3.0 : Module fonction spÈcifique au mode course.
+// PcIsola v3.0 : Module fonction sp√©cifique au mode course.
+// Module pour : PcIsola v3.0 et sup√©rieurs
 // --------------------------------
 #include <iostream>
 #include <vector>
@@ -8,8 +9,8 @@
 
 /**
 * Fonction qui verifie si le pion du joueur touche la zone de l'adversaire (pour Isola course).
-* @param t le tableau ‡ verifier.
-* @param numnom le numÈro du pion.
+* @param t le tableau √† verifier.
+* @param numnom le num√©ro du pion.
 * @return faux si le pion est dans la zone de l'adversaire, vrai sinon.
 **/
 bool gagner(Tab2Dint t, int numnom)
@@ -23,7 +24,7 @@ bool gagner(Tab2Dint t, int numnom)
 	{
 		for (int j = 0; j < t[i].size(); j++)
 		{
-			// Une fois le pion trouvÈ, mettre sa position dans x et y.
+			// Une fois le pion trouv√©, mettre sa position dans x et y.
 			if (t[i][j] == numnom)
 			{
 				x = i;
